@@ -1,3 +1,0 @@
-D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\Definitions.MineUE4.h
-D:\Epic Games\UE_4.25\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
-D:\Epic Games\UE_4.25\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h
