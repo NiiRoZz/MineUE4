@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"D:\\MineUE4\\MineUE4\\Source\\MineUE4\\MineUE4.Build.cs",
+		"D:\\MineUE4\\MineUE4\\Source\\MineUE4.Target.cs",
+		"D:\\MineUE4\\MineUE4\\Source\\MineUE4Editor.Target.cs"
+	],
+	"EngineVersion": "4.25.1"
+}

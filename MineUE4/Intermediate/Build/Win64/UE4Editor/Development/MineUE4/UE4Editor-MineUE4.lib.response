@@ -1,0 +1,16 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-MineUE4.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"D:\MineUE4\MineUE4\Intermediate\Build\Win64\MineUE4Editor\Development\Engine\SharedPCH.Engine.ShadowErrors.h.obj"
+"D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\MineUE4.cpp.obj"
+"D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\MineUE4GameModeBase.cpp.obj"
+"D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\MineUE4.init.gen.cpp.obj"
+"D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\MineUE4GameModeBase.gen.cpp.obj"
+"D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\Default.rc2.res"
+/OUT:"D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\UE4Editor-MineUE4.lib"
+/INCLUDE:IMPLEMENT_MODULE_MineUE4

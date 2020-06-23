@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\MineUE4.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{89C1AE4F-6381-463C-9F74-1368F89EF124}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\MineUE4.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\MineUE4Editor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{EEC4EC5D-A8D6-4A9A-9265-3284B88E91FC}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\MineUE4">
+      <UniqueIdentifier>{163A3FA0-915D-471A-A72B-A5BC2731F309}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\MineUE4\MineUE4.Build.cs">
+      <Filter>Source\MineUE4</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\MineUE4\MineUE4.cpp">
+      <Filter>Source\MineUE4</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\MineUE4\MineUE4.h">
+      <Filter>Source\MineUE4</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\MineUE4\MineUE4GameModeBase.cpp">
+      <Filter>Source\MineUE4</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\MineUE4\MineUE4GameModeBase.h">
+      <Filter>Source\MineUE4</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

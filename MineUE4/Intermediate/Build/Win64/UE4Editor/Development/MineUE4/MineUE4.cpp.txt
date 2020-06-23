@@ -1,0 +1,2 @@
+D:\MineUE4\MineUE4\Intermediate\Build\Win64\UE4Editor\Development\MineUE4\Definitions.MineUE4.h
+D:\MineUE4\MineUE4\Source\MineUE4\MineUE4.h
