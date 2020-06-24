@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "CubeInst.generated.h"
 
 UCLASS()
@@ -15,12 +16,14 @@ public:
 	// Sets default values for this actor's properties
 	ACubeInst();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UInstancedStaticMeshComponent* m_MeshInst;
+	UInstancedStaticMeshComponent* GetMeshInst();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UInstancedStaticMeshComponent* m_MeshInst;
 
 public:	
 	// Called every frame
