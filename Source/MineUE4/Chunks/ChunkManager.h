@@ -19,6 +19,8 @@ public:
   // Called every frame
   virtual void Tick(float DeltaTime) override;
 
+  void AddBlock(FIntVector pos, uint32 BlockType);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

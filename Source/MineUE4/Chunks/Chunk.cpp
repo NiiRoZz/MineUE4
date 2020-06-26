@@ -11,8 +11,6 @@ AChunk::AChunk()
 {
   // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
   PrimaryActorTick.bCanEverTick = true;
-
-  m_AllBlocks.Reserve(CHUNKSIZEX * CHUNKSIZEY * CHUNKSIZEZ);
 }
 
 // Called when the game starts or when spawned
@@ -47,18 +45,66 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 
 void AChunk::UpdateVisibleBlocks()
 {
-  m_VisibleBlocks.Empty();
+  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateVisibleBlocks 1 %d"), m_AllBlocks.Num());
 
   //TODO: Make a algortihm to find only visible blocks
   for (auto& currBlock : m_AllBlocks)
   {
-    m_VisibleBlocks.Add(currBlock);
+    if (m_VisibleBlocksPos.Contains(currBlock.Key))
+    {
+      for (int32 i = 0; i < m_VisibleBlocks.VisibleBlocks.Num(); ++i)
+      {
+        if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation == currBlock.Key)
+        {
+          // If it's a air block, we don't care
+          if (currBlock.Value.BlockType == 0)
+          {
+            m_VisibleBlocksPos.Remove(currBlock.Key);
+            m_VisibleBlocks.VisibleBlocks.RemoveAt(i, 1, false);
+            m_VisibleBlocks.MarkArrayDirty();
+          }
+          else if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation != currBlock.Value.RelativeLocation
+            && m_VisibleBlocks.VisibleBlocks[i].BlockType != currBlock.Value.BlockType)
+          {
+            m_VisibleBlocks.VisibleBlocks[i].BlockType = currBlock.Value.BlockType;
+            m_VisibleBlocks.VisibleBlocks[i].RelativeLocation = currBlock.Value.RelativeLocation;
+            m_VisibleBlocks.MarkItemDirty(m_VisibleBlocks.VisibleBlocks[i]);
+          }
+          break;
+        }
+      }
+    }
+    else
+    {
+      // If it's a air block, we don't care
+      if (currBlock.Value.BlockType == 0)
+      {
+        continue;
+      }
+
+      m_VisibleBlocks.MarkItemDirty(m_VisibleBlocks.VisibleBlocks.Add_GetRef(currBlock.Value));
+      m_VisibleBlocksPos.Add(currBlock.Key);
+    }
+  }
+
+  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateVisibleBlocks 2 %d"), m_VisibleBlocks.VisibleBlocks.Num());
+}
+
+void AChunk::SetBlock(FIntVector relativePos, FBlock& block)
+{
+  if (m_AllBlocks.Contains(relativePos))
+  {
+    m_AllBlocks[relativePos] = block;
+  }
+  else
+  {
+    m_AllBlocks.Add(relativePos, block);
   }
 }
 
 void AChunk::OnRep_VisibleBlocks()
 {
-  UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.Num());
+  UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.VisibleBlocks.Num());
   TArray<AActor*> arrayCubeInst;
 
   UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeInst::StaticClass(), arrayCubeInst);
@@ -73,11 +119,8 @@ void AChunk::OnRep_VisibleBlocks()
   m_CubeInstancies.Empty();
 
   FTransform transform;
-  for (auto &visibleBlock : m_VisibleBlocks)
+  for (auto &visibleBlock : m_VisibleBlocks.VisibleBlocks)
   {
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 2 %d %f"), visibleBlock.RelativeLocation[0], GetActorLocation().X);
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 3 %d %f"), visibleBlock.RelativeLocation[1], GetActorLocation().Y);
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 4 %d %f"), visibleBlock.RelativeLocation[2], GetActorLocation().Z);
       FVector pos = FVector(
           visibleBlock.RelativeLocation[0] + GetActorLocation().X,
           visibleBlock.RelativeLocation[1] + GetActorLocation().Y,
@@ -87,15 +130,9 @@ void AChunk::OnRep_VisibleBlocks()
       transform.SetLocation(pos);
 
       int32 idx = cubeInst->GetMeshInst()->AddInstanceWorldSpace(transform);
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 5 %d"), idx);
-      cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f, true);
+      cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f);
 
       m_CubeInstancies.Add(idx);
   }
-}
-
-TArray<FBlock>& AChunk::GetAllBlocks()
-{
-  return m_AllBlocks;
 }
 

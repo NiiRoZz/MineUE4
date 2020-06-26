@@ -10,13 +10,13 @@
  * 
  */
 USTRUCT()
-struct MINEUE4_API FBlock
+struct MINEUE4_API FBlock : public FFastArraySerializerItem
 {
   GENERATED_BODY()
 
 public:
   UPROPERTY()
-  uint32 BlockType;
+  uint32 BlockType = 0;
 
   UPROPERTY()
   FIntVector RelativeLocation;

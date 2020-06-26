@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Engine/ActorChannel.h"
-#include "../Block.h"
+#include "../BlockArray.h"
 #include "Chunk.generated.h"
 
 UCLASS()
@@ -28,9 +28,9 @@ public:
 
   void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-  TArray<FBlock>& GetAllBlocks();
-
   void UpdateVisibleBlocks();
+
+  void SetBlock(FIntVector relativePos, FBlock &block);
 
 protected:
   // Called when the game starts or when spawned
@@ -43,12 +43,15 @@ protected:
 private:
 
   UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
-  TArray<FBlock>	  m_VisibleBlocks;
+  FBlockArray	                m_VisibleBlocks;
+
+  UPROPERTY()
+  TSet<FIntVector>            m_VisibleBlocksPos;
 
   //Only used at server side
   UPROPERTY()
-  TArray<FBlock>	  m_AllBlocks;
+  TMap<FIntVector, FBlock>	  m_AllBlocks;
 
   UPROPERTY()
-  TArray<int32>     m_CubeInstancies;
+  TArray<int32>               m_CubeInstancies;
 };

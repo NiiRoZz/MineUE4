@@ -25,15 +25,6 @@ void ACubeInst::BeginPlay()
   Super::BeginPlay();
 
   SetReplicates(false);
-  
-  FTransform transform;
-
-  FVector loc(0.0);
-
-  transform.SetLocation(loc);
-
-  //int32 idx = m_MeshInst->AddInstance(transform);
-  //m_MeshInst->SetCustomDataValue(idx, 0, 255.f);
 }
 
 // Called every frame
