@@ -15,6 +15,7 @@ class MINEUE4_API UBlock: public UObject
 {
   GENERATED_BODY()
 
+public:
   UPROPERTY(Replicated)
   uint32 BlockType;
 

@@ -52,4 +52,7 @@ private:
   //Only used at server side
   UPROPERTY()
   TArray<UBlock*>	  m_AllBlocks;
+
+  UPROPERTY()
+  TArray<int32> m_CubeInstancies;
 };

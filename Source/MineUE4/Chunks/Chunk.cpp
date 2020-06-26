@@ -2,7 +2,9 @@
 
 
 #include "Chunk.h"
+#include "../Instances/CubeInst.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AChunk::AChunk()
@@ -47,17 +49,36 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 void AChunk::OnRep_VisibleBlocks()
 {
   UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks %d"), m_VisibleBlocks.Num());
+  TArray<AActor*> arrayCubeInst;
 
-  for (int x = 0; x < CHUNKSIZEX; ++x)
-  {
-    for (int y = 0; y < CHUNKSIZEY; ++y)
-    {
-      for (int z = 0; z < CHUNKSIZEZ; ++z)
-      {
-        //m_AllBlocks[(x * CHUNKSIZEY + y) * CHUNKSIZEZ + z] = 1;
-        
-      }
-    }
+  UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeInst::StaticClass(), arrayCubeInst);
+  check(arrayCubeInst.Num() > 0);
+  ACubeInst* cubeInst = Cast<ACubeInst>(arrayCubeInst[0]);
+
+  for (auto cubeInstance : m_CubeInstancies) {
+      cubeInst->GetMeshInst()->RemoveInstance(cubeInstance);
+  }
+
+  m_CubeInstancies.Empty();
+
+  FTransform transform;
+ 
+
+  for (auto visibleBlock : m_VisibleBlocks) {
+
+      FVector pos = FVector(
+          visibleBlock->RelativeLocation[0]+ GetActorLocation().X ,
+          visibleBlock->RelativeLocation[1] + GetActorLocation().Y,
+          visibleBlock->RelativeLocation[2] + GetActorLocation().Z
+      );
+
+      transform.SetLocation(pos);
+
+
+      int32 idx = cubeInst->GetMeshInst()->AddInstanceWorldSpace(transform);
+
+      m_CubeInstancies.Add(idx);
+      cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f);
   }
 }
 
