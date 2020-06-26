@@ -50,14 +50,16 @@ void AChunk::UpdateVisibleBlocks()
   //TODO: Make a algortihm to find only visible blocks
   for (auto& currBlock : m_AllBlocks)
   {
+    bool remove = (currBlock.Value.BlockType == 0);
+
     if (m_VisibleBlocksPos.Contains(currBlock.Key))
     {
       for (int32 i = 0; i < m_VisibleBlocks.VisibleBlocks.Num(); ++i)
       {
         if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation == currBlock.Key)
         {
-          // If it's a air block, we don't care
-          if (currBlock.Value.BlockType == 0)
+          // If it's undesired block, we remove it
+          if (remove)
           {
             m_VisibleBlocksPos.Remove(currBlock.Key);
             m_VisibleBlocks.VisibleBlocks.RemoveAt(i, 1, false);
@@ -76,8 +78,8 @@ void AChunk::UpdateVisibleBlocks()
     }
     else
     {
-      // If it's a air block, we don't care
-      if (currBlock.Value.BlockType == 0)
+      // If it's undesired block, we don't care
+      if (remove)
       {
         continue;
       }
