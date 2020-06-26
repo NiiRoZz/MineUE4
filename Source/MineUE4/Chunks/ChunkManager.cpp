@@ -26,8 +26,11 @@ void AChunkManager::BeginPlay()
 
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay %p"), chunk);
 
-    chunk->GetAllBlocks().Add(NewObject<UBlock>());
-    chunk->UpdateVisibleBlocks();
+    FBlock block;
+    block.RelativeLocation[0] = 0;
+    block.RelativeLocation[1] = 0;
+    block.RelativeLocation[2] = 0;
+    chunk->GetAllBlocks().Add(block);
     chunk->FlushNetDormancy();
 
     m_Chunks.Add( pos, chunk );

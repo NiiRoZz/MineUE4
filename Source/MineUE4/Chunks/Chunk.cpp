@@ -13,7 +13,6 @@ AChunk::AChunk()
   PrimaryActorTick.bCanEverTick = true;
 
   m_AllBlocks.Reserve(CHUNKSIZEX * CHUNKSIZEY * CHUNKSIZEZ);
-  m_VisibleBlocks.Reserve(CHUNKSIZEX * CHUNKSIZEY * CHUNKSIZEZ);
 }
 
 // Called when the game starts or when spawned
@@ -43,75 +42,49 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 {
   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-  DOREPLIFETIME(AChunk, m_VisibleBlocks);
+  DOREPLIFETIME(AChunk, m_AllBlocks);
 }
 
-void AChunk::OnRep_VisibleBlocks()
+void AChunk::OnRep_AllBlocks()
 {
-  UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks %d"), m_VisibleBlocks.Num());
+  UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 1 %d"), m_AllBlocks.Num());
   TArray<AActor*> arrayCubeInst;
 
   UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeInst::StaticClass(), arrayCubeInst);
   check(arrayCubeInst.Num() > 0);
   ACubeInst* cubeInst = Cast<ACubeInst>(arrayCubeInst[0]);
 
-  for (auto cubeInstance : m_CubeInstancies) {
+  for (auto cubeInstance : m_CubeInstancies)
+  {
       cubeInst->GetMeshInst()->RemoveInstance(cubeInstance);
   }
 
   m_CubeInstancies.Empty();
 
   FTransform transform;
- 
-
-  for (auto visibleBlock : m_VisibleBlocks) {
-
+  for (auto &visibleBlock : m_AllBlocks)
+  {
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 2 %d %f"), visibleBlock.RelativeLocation[0], GetActorLocation().X);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 3 %d %f"), visibleBlock.RelativeLocation[1], GetActorLocation().Y);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 4 %d %f"), visibleBlock.RelativeLocation[2], GetActorLocation().Z);
       FVector pos = FVector(
-          visibleBlock->RelativeLocation[0]+ GetActorLocation().X ,
-          visibleBlock->RelativeLocation[1] + GetActorLocation().Y,
-          visibleBlock->RelativeLocation[2] + GetActorLocation().Z
+          visibleBlock.RelativeLocation[0] + GetActorLocation().X,
+          visibleBlock.RelativeLocation[1] + GetActorLocation().Y,
+          visibleBlock.RelativeLocation[2] + GetActorLocation().Z
       );
 
       transform.SetLocation(pos);
 
-
       int32 idx = cubeInst->GetMeshInst()->AddInstanceWorldSpace(transform);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 5 %d"), idx);
+      cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f, true);
 
       m_CubeInstancies.Add(idx);
-      cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f);
   }
 }
 
-void AChunk::UpdateVisibleBlocks()
-{
-  m_VisibleBlocks.Empty();
-
-  for (uint16 i = 0; i < m_AllBlocks.Num(); ++i)
-  {
-    if (m_AllBlocks[i])
-      m_VisibleBlocks.Insert(m_AllBlocks[i], i);
-  }
-
-  UE_LOG(LogTemp, Warning, TEXT("UpdateVisibleBlocks %d"), m_VisibleBlocks.Num());
-}
-
-TArray<UBlock*>& AChunk::GetAllBlocks()
+TArray<FBlock>& AChunk::GetAllBlocks()
 {
   return m_AllBlocks;
-}
-
-bool AChunk::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
-{
-  bool wroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
-
-  for (UBlock* block : m_VisibleBlocks)
-  {
-    if (block)
-    {
-      wroteSomething |= Channel->ReplicateSubobject(block, *Bunch, *RepFlags);
-    }
-  }
-
-  return wroteSomething;
 }
 

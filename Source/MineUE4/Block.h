@@ -3,26 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "Serialization/Archive.h"
 #include "Block.generated.h"
 
 /**
  * 
  */
-UCLASS()
-class MINEUE4_API UBlock: public UObject
+USTRUCT()
+struct MINEUE4_API FBlock
 {
   GENERATED_BODY()
 
 public:
-  UPROPERTY(Replicated)
+  UPROPERTY()
   uint32 BlockType;
 
-  UPROPERTY(Replicated)
+  UPROPERTY()
   FIntVector RelativeLocation;
-
-  bool IsSupportedForNetworking() const override;
-
-  void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

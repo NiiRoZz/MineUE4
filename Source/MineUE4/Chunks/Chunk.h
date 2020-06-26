@@ -28,12 +28,7 @@ public:
 
   void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-  bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
-
-  UFUNCTION()
-  void UpdateVisibleBlocks();
-
-  TArray<UBlock*>& GetAllBlocks();
+  TArray<FBlock>& GetAllBlocks();
 
 protected:
   // Called when the game starts or when spawned
@@ -41,18 +36,14 @@ protected:
 
   /** "On receive chunk data" logic. Client-side*/
   UFUNCTION()
-  void OnRep_VisibleBlocks();
+  void OnRep_AllBlocks();
 
 private:
 
-  //Only used at client side
-  UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
-  TArray<UBlock*>   m_VisibleBlocks;
-
   //Only used at server side
-  UPROPERTY()
-  TArray<UBlock*>	  m_AllBlocks;
+  UPROPERTY(ReplicatedUsing = OnRep_AllBlocks)
+  TArray<FBlock>	  m_AllBlocks;
 
   UPROPERTY()
-  TArray<int32> m_CubeInstancies;
+  TArray<int32>     m_CubeInstancies;
 };
