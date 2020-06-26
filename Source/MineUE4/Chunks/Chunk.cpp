@@ -42,12 +42,23 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 {
   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-  DOREPLIFETIME(AChunk, m_AllBlocks);
+  DOREPLIFETIME(AChunk, m_VisibleBlocks);
 }
 
-void AChunk::OnRep_AllBlocks()
+void AChunk::UpdateVisibleBlocks()
 {
-  UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 1 %d"), m_AllBlocks.Num());
+  m_VisibleBlocks.Empty();
+
+  //TODO: Make a algortihm to find only visible blocks
+  for (auto& currBlock : m_AllBlocks)
+  {
+    m_VisibleBlocks.Add(currBlock);
+  }
+}
+
+void AChunk::OnRep_VisibleBlocks()
+{
+  UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.Num());
   TArray<AActor*> arrayCubeInst;
 
   UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeInst::StaticClass(), arrayCubeInst);
@@ -62,11 +73,11 @@ void AChunk::OnRep_AllBlocks()
   m_CubeInstancies.Empty();
 
   FTransform transform;
-  for (auto &visibleBlock : m_AllBlocks)
+  for (auto &visibleBlock : m_VisibleBlocks)
   {
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 2 %d %f"), visibleBlock.RelativeLocation[0], GetActorLocation().X);
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 3 %d %f"), visibleBlock.RelativeLocation[1], GetActorLocation().Y);
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 4 %d %f"), visibleBlock.RelativeLocation[2], GetActorLocation().Z);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 2 %d %f"), visibleBlock.RelativeLocation[0], GetActorLocation().X);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 3 %d %f"), visibleBlock.RelativeLocation[1], GetActorLocation().Y);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 4 %d %f"), visibleBlock.RelativeLocation[2], GetActorLocation().Z);
       FVector pos = FVector(
           visibleBlock.RelativeLocation[0] + GetActorLocation().X,
           visibleBlock.RelativeLocation[1] + GetActorLocation().Y,
@@ -76,7 +87,7 @@ void AChunk::OnRep_AllBlocks()
       transform.SetLocation(pos);
 
       int32 idx = cubeInst->GetMeshInst()->AddInstanceWorldSpace(transform);
-      UE_LOG(LogTemp, Warning, TEXT("OnRep_AllBlocks 5 %d"), idx);
+      UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 5 %d"), idx);
       cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f, true);
 
       m_CubeInstancies.Add(idx);

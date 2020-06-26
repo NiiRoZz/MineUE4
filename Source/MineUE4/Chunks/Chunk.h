@@ -30,18 +30,23 @@ public:
 
   TArray<FBlock>& GetAllBlocks();
 
+  void UpdateVisibleBlocks();
+
 protected:
   // Called when the game starts or when spawned
   virtual void BeginPlay() override;
 
   /** "On receive chunk data" logic. Client-side*/
   UFUNCTION()
-  void OnRep_AllBlocks();
+  void OnRep_VisibleBlocks();
 
 private:
 
+  UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
+  TArray<FBlock>	  m_VisibleBlocks;
+
   //Only used at server side
-  UPROPERTY(ReplicatedUsing = OnRep_AllBlocks)
+  UPROPERTY()
   TArray<FBlock>	  m_AllBlocks;
 
   UPROPERTY()

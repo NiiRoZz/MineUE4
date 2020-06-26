@@ -31,6 +31,7 @@ void AChunkManager::BeginPlay()
     block.RelativeLocation[1] = 0;
     block.RelativeLocation[2] = 0;
     chunk->GetAllBlocks().Add(block);
+    chunk->UpdateVisibleBlocks();
     chunk->FlushNetDormancy();
 
     m_Chunks.Add( pos, chunk );
