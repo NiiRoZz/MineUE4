@@ -65,13 +65,13 @@ void AChunk::UpdateVisibleBlocks()
             m_VisibleBlocks.VisibleBlocks.RemoveAt(i, 1, false);
             m_VisibleBlocks.MarkArrayDirty();
           }
-          else if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation != currBlock.Value.RelativeLocation
-            && m_VisibleBlocks.VisibleBlocks[i].BlockType != currBlock.Value.BlockType)
+          else if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation != currBlock.Value.RelativeLocation && m_VisibleBlocks.VisibleBlocks[i].BlockType != currBlock.Value.BlockType)
           {
             m_VisibleBlocks.VisibleBlocks[i].BlockType = currBlock.Value.BlockType;
             m_VisibleBlocks.VisibleBlocks[i].RelativeLocation = currBlock.Value.RelativeLocation;
             m_VisibleBlocks.MarkItemDirty(m_VisibleBlocks.VisibleBlocks[i]);
           }
+
           break;
         }
       }
