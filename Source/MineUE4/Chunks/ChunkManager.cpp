@@ -21,7 +21,7 @@ void AChunkManager::BeginPlay()
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    const int nmbChunk = 3;
+    const int nmbChunk = 10;
     for (int x = 0; x < (16 * nmbChunk); ++x)
     {
       for (int y = 0; y < (16 * nmbChunk); ++y)
