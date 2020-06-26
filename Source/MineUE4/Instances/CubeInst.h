@@ -10,23 +10,23 @@
 UCLASS()
 class MINEUE4_API ACubeInst : public AActor
 {
-	GENERATED_BODY()
-	
+  GENERATED_BODY()
+  
 public:	
-	// Sets default values for this actor's properties
-	ACubeInst();
+  // Sets default values for this actor's properties
+  ACubeInst();
 
-	UInstancedStaticMeshComponent* GetMeshInst();
+  UInstancedStaticMeshComponent* GetMeshInst();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+  // Called when the game starts or when spawned
+  virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UInstancedStaticMeshComponent* m_MeshInst;
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  UInstancedStaticMeshComponent* m_MeshInst;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+  // Called every frame
+  virtual void Tick(float DeltaTime) override;
 
 };
