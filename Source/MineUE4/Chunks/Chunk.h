@@ -45,13 +45,13 @@ private:
   UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
   FBlockArray	                m_VisibleBlocks;
 
-  UPROPERTY(NotReplicated)
+  UPROPERTY()
   TSet<FIntVector>            m_VisibleBlocksPos;
 
   //Only used at server side
-  UPROPERTY(NotReplicated)
+  UPROPERTY()
   TMap<FIntVector, FBlock>	  m_AllBlocks;
 
-  UPROPERTY(NotReplicated)
+  UPROPERTY()
   TArray<int32>               m_CubeInstancies;
 };
