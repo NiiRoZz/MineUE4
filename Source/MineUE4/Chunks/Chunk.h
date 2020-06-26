@@ -30,6 +30,11 @@ public:
 
   bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
+  UFUNCTION()
+  void UpdateVisibleBlocks();
+
+  TArray<UBlock*>& GetAllBlocks();
+
 protected:
   // Called when the game starts or when spawned
   virtual void BeginPlay() override;
@@ -39,9 +44,6 @@ protected:
   void OnRep_VisibleBlocks();
 
 private:
-
-  UFUNCTION()
-  void UpdateVisibleBlocks();
 
   //Only used at client side
   UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)

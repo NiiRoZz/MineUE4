@@ -13,5 +13,9 @@ UCLASS()
 class MINEUE4_API AMineUE4GameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+  AMineUE4GameModeBase();
+
+private:
 	
 };

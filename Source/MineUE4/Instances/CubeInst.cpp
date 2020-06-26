@@ -32,8 +32,8 @@ void ACubeInst::BeginPlay()
 
   transform.SetLocation(loc);
 
-  int32 idx = m_MeshInst->AddInstance(transform);
-  m_MeshInst->SetCustomDataValue(idx, 0, 255.f);
+  //int32 idx = m_MeshInst->AddInstance(transform);
+  //m_MeshInst->SetCustomDataValue(idx, 0, 255.f);
 }
 
 // Called every frame
