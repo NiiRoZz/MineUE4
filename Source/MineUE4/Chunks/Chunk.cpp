@@ -11,6 +11,10 @@ AChunk::AChunk()
 {
   // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
   PrimaryActorTick.bCanEverTick = true;
+
+  m_SceneComponent = CreateDefaultSubobject<USceneComponent>("m_SceneComponent");
+
+  RootComponent = m_SceneComponent;
 }
 
 // Called when the game starts or when spawned
@@ -19,7 +23,7 @@ void AChunk::BeginPlay()
   Super::BeginPlay();
 
   SetReplicates(true);
-  bAlwaysRelevant = true;
+  //bAlwaysRelevant = true;
   SetNetDormancy(ENetDormancy::DORM_DormantAll);
   NetCullDistanceSquared = 368640000.f;
 }

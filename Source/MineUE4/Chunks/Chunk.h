@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/SceneComponent.h"
 #include "Engine/ActorChannel.h"
 #include "../BlockArray.h"
 #include "Chunk.generated.h"
@@ -54,4 +55,7 @@ private:
 
   UPROPERTY()
   TArray<int32>               m_CubeInstancies;
+
+  UPROPERTY()
+  USceneComponent*           m_SceneComponent;
 };
