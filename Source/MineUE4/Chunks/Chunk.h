@@ -4,10 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Components/SceneComponent.h"
+#include "ProceduralMeshComponent.h"
 #include "Engine/ActorChannel.h"
 #include "../BlockArray.h"
 #include "Chunk.generated.h"
+
+enum class EChunkCubeFace : uint8_t
+{
+  TOP = 1 << 0,
+  BOTTOM = 1 << 1,
+  FRONT = 1 << 2,
+  BACK = 1 << 3,
+  RIGHT = 1 << 4,
+  LEFT = 1 << 5,
+  ALL = 63
+};
 
 UCLASS()
 class MINEUE4_API AChunk : public AActor
@@ -41,6 +52,16 @@ protected:
   UFUNCTION()
   void OnRep_VisibleBlocks();
 
+  void GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color);
+
+  void GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos, uint8_t flags);
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  UMaterial* m_Material;
+
+  UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+  UProceduralMeshComponent* m_ProceduralMesh;
+
 private:
 
   UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
@@ -55,7 +76,4 @@ private:
 
   UPROPERTY()
   TArray<int32>               m_CubeInstancies;
-
-  UPROPERTY()
-  USceneComponent*           m_SceneComponent;
 };

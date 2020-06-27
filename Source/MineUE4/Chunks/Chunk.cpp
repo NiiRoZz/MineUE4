@@ -12,9 +12,8 @@ AChunk::AChunk()
   // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
   PrimaryActorTick.bCanEverTick = true;
 
-  m_SceneComponent = CreateDefaultSubobject<USceneComponent>("m_SceneComponent");
-
-  RootComponent = m_SceneComponent;
+  m_ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>("ProceduralMesh");
+  RootComponent = m_ProceduralMesh;
 }
 
 // Called when the game starts or when spawned
@@ -23,9 +22,22 @@ void AChunk::BeginPlay()
   Super::BeginPlay();
 
   SetReplicates(true);
-  //bAlwaysRelevant = true;
   SetNetDormancy(ENetDormancy::DORM_DormantAll);
   NetCullDistanceSquared = 368640000.f;
+
+  TArray<FVector> vertices;
+  TArray<int32> triangles;
+  TArray<FVector2D> uvs;
+  TArray<FLinearColor> colors;
+
+  GenerateCube(vertices, triangles, uvs, colors, FVector(0.0), (uint8_t)EChunkCubeFace::ALL);
+
+  m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), uvs, colors, TArray<FProcMeshTangent>(), false);
+
+  if (m_Material)
+  {
+    m_ProceduralMesh->SetMaterial(0, m_Material);
+  }
 }
 
 // Called every frame
@@ -111,7 +123,7 @@ void AChunk::SetBlock(FIntVector relativePos, FBlock& block)
 void AChunk::OnRep_VisibleBlocks()
 {
   UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.VisibleBlocks.Num());
-  TArray<AActor*> arrayCubeInst;
+  /*TArray<AActor*> arrayCubeInst;
 
   UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeInst::StaticClass(), arrayCubeInst);
   check(arrayCubeInst.Num() > 0);
@@ -139,6 +151,57 @@ void AChunk::OnRep_VisibleBlocks()
       cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f);
 
       m_CubeInstancies.Add(idx);
+  }*/
+}
+
+void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color)
+{
+  const int32 startIdx = vertices.Num();
+  vertices.Append({ pos0, pos1, pos2, pos3 });
+  uvs.Append({ FVector2D(0.f, 0.f), FVector2D(0.f, 1.f), FVector2D(1.f, 1.f), FVector2D(1.f, 0.f) });
+  triangles.Append({ startIdx + 0, startIdx + 1, startIdx + 3, startIdx + 1, startIdx + 2, startIdx + 3 });
+  colors.Append({ color, color, color, color });
+}
+
+void AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos, uint8_t flags)
+{
+  static const uint32 CubeSize = 100;
+  const FVector offset = pos * CubeSize;
+
+  const TArray<FVector> CubeVertices( {
+    offset + FVector(0, 0, 0),
+    offset + FVector(CubeSize, 0, 0),
+    offset + FVector(0, CubeSize, 0),
+    offset + FVector(CubeSize, CubeSize, 0),
+    offset + FVector(0, 0, CubeSize),
+    offset + FVector(CubeSize, 0, CubeSize),
+    offset + FVector(0, CubeSize, CubeSize),
+    offset + FVector(CubeSize, CubeSize, CubeSize) }
+  );
+
+  if (flags & (uint8_t)EChunkCubeFace::BOTTOM)
+  {
+    GenerateQuad( vertices, triangles, uvs, colors, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], FLinearColor(1.f / 255.f, 0.f, 0.f));
+  }
+  if (flags & (uint8_t)EChunkCubeFace::TOP)
+  {
+    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f));
+  }
+  if (flags & (uint8_t)EChunkCubeFace::BACK)
+  {
+    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], FLinearColor(1.f / 255.f, 0.f, 0.f));
+  }
+  if (flags & (uint8_t)EChunkCubeFace::FRONT)
+  {
+    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], FLinearColor(1.f / 255.f, 0.f, 0.f));
+  }
+  if (flags & (uint8_t)EChunkCubeFace::RIGHT)
+  {
+    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], FLinearColor(1.f / 255.f, 0.f, 0.f));
+  }
+  if (flags & (uint8_t)EChunkCubeFace::LEFT)
+  {
+    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f));
   }
 }
 
