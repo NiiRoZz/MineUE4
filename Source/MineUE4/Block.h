@@ -20,4 +20,15 @@ public:
 
   UPROPERTY()
   FIntVector RelativeLocation;
+
+  bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+};
+
+template<>
+struct TStructOpsTypeTraits<FBlock> : public TStructOpsTypeTraitsBase2<FBlock>
+{
+  enum
+  {
+    WithNetSerializer = true
+  };
 };
