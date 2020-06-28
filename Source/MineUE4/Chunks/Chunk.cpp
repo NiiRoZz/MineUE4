@@ -2,7 +2,7 @@
 
 
 #include "Chunk.h"
-#include "../Instances/CubeInst.h"
+#include "ChunkManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -11,6 +11,8 @@ AChunk::AChunk()
 {
   // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
   PrimaryActorTick.bCanEverTick = true;
+
+  m_ChunkManager = nullptr;
 
   m_ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>("ProceduralMesh");
   RootComponent = m_ProceduralMesh;
@@ -24,20 +26,6 @@ void AChunk::BeginPlay()
   SetReplicates(true);
   SetNetDormancy(ENetDormancy::DORM_DormantAll);
   NetCullDistanceSquared = 368640000.f;
-
-  TArray<FVector> vertices;
-  TArray<int32> triangles;
-  TArray<FVector2D> uvs;
-  TArray<FLinearColor> colors;
-
-  GenerateCube(vertices, triangles, uvs, colors, FVector(0.0), (uint8_t)EChunkCubeFace::ALL);
-
-  m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), uvs, colors, TArray<FProcMeshTangent>(), false);
-
-  if (m_Material)
-  {
-    m_ProceduralMesh->SetMaterial(0, m_Material);
-  }
 }
 
 // Called every frame
@@ -105,6 +93,11 @@ void AChunk::UpdateVisibleBlocks()
     }
   }
 
+  if (GetLocalRole() == ENetRole::ROLE_Authority)
+  {
+    OnRep_VisibleBlocks();
+  }
+
   UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateVisibleBlocks 2 %d"), m_VisibleBlocks.VisibleBlocks.Num());
 }
 
@@ -123,35 +116,43 @@ void AChunk::SetBlock(FIntVector relativePos, FBlock& block)
 void AChunk::OnRep_VisibleBlocks()
 {
   UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.VisibleBlocks.Num());
-  /*TArray<AActor*> arrayCubeInst;
 
-  UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeInst::StaticClass(), arrayCubeInst);
-  check(arrayCubeInst.Num() > 0);
-  ACubeInst* cubeInst = Cast<ACubeInst>(arrayCubeInst[0]);
-
-  for (auto cubeInstance : m_CubeInstancies)
+  if (!m_ChunkManager)
   {
-      cubeInst->GetMeshInst()->RemoveInstance(cubeInstance);
+    TArray<AActor*> arrayChunkManager;
+
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AChunkManager::StaticClass(), arrayChunkManager);
+    check(arrayChunkManager.Num() > 0);
+
+    m_ChunkManager = Cast<AChunkManager>(arrayChunkManager[0]);
+    check(m_ChunkManager);
   }
 
-  m_CubeInstancies.Empty();
+  m_ProceduralMesh->ClearAllMeshSections();
 
-  FTransform transform;
+  TArray<FVector> vertices;
+  TArray<int32> triangles;
+  TArray<FVector2D> uvs;
+  TArray<FLinearColor> colors;
+
   for (auto &visibleBlock : m_VisibleBlocks.VisibleBlocks)
   {
+      //Pos should be in cube world
       FVector pos = FVector(
-          visibleBlock.RelativeLocation[0] + GetActorLocation().X,
-          visibleBlock.RelativeLocation[1] + GetActorLocation().Y,
-          visibleBlock.RelativeLocation[2] + GetActorLocation().Z
+          visibleBlock.RelativeLocation[0],
+          visibleBlock.RelativeLocation[1],
+          visibleBlock.RelativeLocation[2]
       );
 
-      transform.SetLocation(pos);
+      GenerateCube(vertices, triangles, uvs, colors, pos, (uint8_t) EChunkCubeFace::ALL);
+  }
 
-      int32 idx = cubeInst->GetMeshInst()->AddInstanceWorldSpace(transform);
-      cubeInst->GetMeshInst()->SetCustomDataValue(idx, 0, 255.f);
+  m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), uvs, colors, TArray<FProcMeshTangent>(), false);
 
-      m_CubeInstancies.Add(idx);
-  }*/
+  if (m_ChunkManager && m_ChunkManager->GetDefaultMaterialChunk())
+  {
+    m_ProceduralMesh->SetMaterial(0, m_ChunkManager->GetDefaultMaterialChunk());
+  }
 }
 
 void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color)
@@ -165,7 +166,6 @@ void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, T
 
 void AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos, uint8_t flags)
 {
-  static const uint32 CubeSize = 100;
   const FVector offset = pos * CubeSize;
 
   const TArray<FVector> CubeVertices( {

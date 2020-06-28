@@ -21,12 +21,12 @@ void AChunkManager::BeginPlay()
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    /*const int nmbChunk = 10;
+    const int nmbChunk = 9;
     for (int x = 0; x < (16 * nmbChunk); ++x)
     {
       for (int y = 0; y < (16 * nmbChunk); ++y)
       {
-        AddBlock(FIntVector(10 * x, 10 * y, 0), 1);
+        AddBlock(FIntVector(x, y, 0), 1);
       }
     }
 
@@ -37,7 +37,7 @@ void AChunkManager::BeginPlay()
         currChunk.Value->UpdateVisibleBlocks();
         currChunk.Value->FlushNetDormancy();
       }
-    }*/
+    }
 
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay End"));
   }
@@ -46,12 +46,16 @@ void AChunkManager::BeginPlay()
 void AChunkManager::AddBlock(FIntVector pos, uint32 BlockType)
 {
   FIntVector chunkPos = FIntVector(
-    pos[0] / (AChunk::CHUNKSIZEX * 10),
-    pos[1] / (AChunk::CHUNKSIZEY * 10),
-    pos[2] / (AChunk::CHUNKSIZEZ * 10)
+    pos[0] / (AChunk::CHUNKSIZEX),
+    pos[1] / (AChunk::CHUNKSIZEY),
+    pos[2] / (AChunk::CHUNKSIZEZ)
   );
 
-  FIntVector relativePos = pos - chunkPos;
+  FIntVector relativePos = FIntVector(
+    pos[0] % (AChunk::CHUNKSIZEX),
+    pos[1] % (AChunk::CHUNKSIZEY),
+    pos[2] % (AChunk::CHUNKSIZEZ)
+  );
 
   UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 1 %d %d %d"), chunkPos[0], chunkPos[1], chunkPos[2]);
   UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 2 %d %d %d"), relativePos[0], relativePos[1], relativePos[2]);
@@ -69,12 +73,23 @@ void AChunkManager::AddBlock(FIntVector pos, uint32 BlockType)
   else
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 3 not contains"));
-    chunk = GetWorld()->SpawnActor<AChunk>(FVector(chunkPos[0], chunkPos[1], chunkPos[2]), FRotator(0.0));
+    FVector realPosChunk = FVector(
+      chunkPos[0] * AChunk::CHUNKSIZEX * AChunk::CubeSize,
+      chunkPos[1] * AChunk::CHUNKSIZEY * AChunk::CubeSize,
+      chunkPos[2] * AChunk::CHUNKSIZEZ * AChunk::CubeSize
+    );
+
+    chunk = GetWorld()->SpawnActor<AChunk>(realPosChunk, FRotator(0.0));
     m_Chunks.Add(chunkPos, chunk);
   }
   check(chunk);
 
   chunk->SetBlock(relativePos, block);
+}
+
+UMaterial* AChunkManager::GetDefaultMaterialChunk()
+{
+  return m_DefaultMaterialChunk;
 }
 
 // Called every frame

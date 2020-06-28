@@ -21,9 +21,14 @@ public:
 
   void AddBlock(FIntVector pos, uint32 BlockType);
 
+  UMaterial* GetDefaultMaterialChunk();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  UMaterial* m_DefaultMaterialChunk;
 
 private:	
 	TMap<FIntVector, AChunk*> m_Chunks;

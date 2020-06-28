@@ -20,6 +20,8 @@ enum class EChunkCubeFace : uint8_t
   ALL = 63
 };
 
+class AChunkManager;
+
 UCLASS()
 class MINEUE4_API AChunk : public AActor
 {
@@ -30,6 +32,7 @@ public:
   static const uint16 CHUNKSIZEY = 16u;
   static const uint16 CHUNKSIZEZ = 32u;
   static const uint16 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
+  static const uint16 CubeSize = 100;
   
 public:	
   // Sets default values for this actor's properties
@@ -56,9 +59,6 @@ protected:
 
   void GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos, uint8_t flags);
 
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  UMaterial* m_Material;
-
   UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
   UProceduralMeshComponent* m_ProceduralMesh;
 
@@ -75,5 +75,5 @@ private:
   TMap<FIntVector, FBlock>	  m_AllBlocks;
 
   UPROPERTY()
-  TArray<int32>               m_CubeInstancies;
+  AChunkManager*              m_ChunkManager;
 };
