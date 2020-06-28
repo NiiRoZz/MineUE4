@@ -46,19 +46,16 @@ void AChunkManager::BeginPlay()
 void AChunkManager::AddBlock(FIntVector pos, uint32 BlockType)
 {
   FIntVector chunkPos = FIntVector(
-    pos[0] / (AChunk::CHUNKSIZEX),
-    pos[1] / (AChunk::CHUNKSIZEY),
-    pos[2] / (AChunk::CHUNKSIZEZ)
+    pos[0] / AChunk::CHUNKSIZEX,
+    pos[1] / AChunk::CHUNKSIZEY,
+    pos[2] / AChunk::CHUNKSIZEZ
   );
 
   FIntVector relativePos = FIntVector(
-    pos[0] % (AChunk::CHUNKSIZEX),
-    pos[1] % (AChunk::CHUNKSIZEY),
-    pos[2] % (AChunk::CHUNKSIZEZ)
+    pos[0] % AChunk::CHUNKSIZEX,
+    pos[1] % AChunk::CHUNKSIZEY,
+    pos[2] % AChunk::CHUNKSIZEZ
   );
-
-  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 1 %d %d %d"), chunkPos[0], chunkPos[1], chunkPos[2]);
-  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 2 %d %d %d"), relativePos[0], relativePos[1], relativePos[2]);
 
   FBlock block;
   block.BlockType = BlockType;
@@ -67,12 +64,10 @@ void AChunkManager::AddBlock(FIntVector pos, uint32 BlockType)
   AChunk* chunk;
   if (m_Chunks.Contains(chunkPos))
   {
-    UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 3 contains"));
     chunk = m_Chunks[chunkPos];
   }
   else
   {
-    UE_LOG(LogTemp, Warning, TEXT("AChunkManager::AddBlock 3 not contains"));
     FVector realPosChunk = FVector(
       chunkPos[0] * AChunk::CHUNKSIZEX * AChunk::CubeSize,
       chunkPos[1] * AChunk::CHUNKSIZEY * AChunk::CubeSize,

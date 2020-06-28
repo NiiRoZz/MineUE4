@@ -137,14 +137,7 @@ void AChunk::OnRep_VisibleBlocks()
 
   for (auto &visibleBlock : m_VisibleBlocks.VisibleBlocks)
   {
-      //Pos should be in cube world
-      FVector pos = FVector(
-          visibleBlock.RelativeLocation[0],
-          visibleBlock.RelativeLocation[1],
-          visibleBlock.RelativeLocation[2]
-      );
-
-      GenerateCube(vertices, triangles, uvs, colors, pos, (uint8_t) EChunkCubeFace::ALL);
+      GenerateCube(vertices, triangles, uvs, colors, visibleBlock.RelativeLocation, (uint8_t) EChunkCubeFace::ALL);
   }
 
   m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), uvs, colors, TArray<FProcMeshTangent>(), false);
@@ -164,9 +157,9 @@ void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, T
   colors.Append({ color, color, color, color });
 }
 
-void AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos, uint8_t flags)
+void AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FIntVector pos, uint8_t flags)
 {
-  const FVector offset = pos * CubeSize;
+  const FVector offset = FVector( pos * CubeSize );
 
   const TArray<FVector> CubeVertices( {
     offset + FVector(0, 0, 0),
