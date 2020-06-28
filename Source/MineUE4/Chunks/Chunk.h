@@ -73,6 +73,8 @@ protected:
 
 private:
 
+  void FindChunkManager();
+
   UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
   FBlockArray	                m_VisibleBlocks;
 

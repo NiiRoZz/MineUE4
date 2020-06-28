@@ -21,12 +21,12 @@ void AChunkManager::BeginPlay()
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    const int nmbChunk = 3;
+    const int nmbChunk = 1;
     for (int x = 0; x < (AChunk::CHUNKSIZEX * nmbChunk); ++x)
     {
       for (int y = 0; y < (AChunk::CHUNKSIZEY * nmbChunk); ++y)
       {
-        for (int z = 0; z < (AChunk::CHUNKSIZEZ * nmbChunk); ++z)
+        for (int z = 0; z < 5; ++z)
         {
           FIntVector pos = FIntVector(x, y, z);
           AddBlock(pos, 1);
@@ -34,7 +34,7 @@ void AChunkManager::BeginPlay()
       }
     }
 
-    for (auto currChunk : m_Chunks)
+    for (auto& currChunk : m_Chunks)
     {
       if (currChunk.Value)
       {

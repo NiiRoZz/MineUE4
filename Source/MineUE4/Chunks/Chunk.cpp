@@ -31,7 +31,11 @@ void AChunk::BeginPlay()
 {
   Super::BeginPlay();
 
-  SetReplicates(true);
+  if (GetLocalRole() == ROLE_Authority)
+  {
+    SetReplicates(true);
+  }
+
   SetNetDormancy(ENetDormancy::DORM_DormantAll);
   NetCullDistanceSquared = 368640000.f;
 }
@@ -59,10 +63,11 @@ void AChunk::UpdateVisibleBlocks()
 {
   UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateVisibleBlocks 1 %d"), m_AllBlocks.Num());
 
-  //TODO: Make a algortihm to find only visible blocks
+  FindChunkManager();
+
   for (auto& currBlock : m_AllBlocks)
   {
-    bool remove = (currBlock.Value.BlockType == 0);
+    bool remove = (currBlock.Value.BlockType == 0 || GetCubeFlags(currBlock.Key) == 0);
 
     if (m_VisibleBlocksPos.Contains(currBlock.Key))
     {
@@ -139,21 +144,7 @@ void AChunk::OnRep_VisibleBlocks()
 {
   UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.VisibleBlocks.Num());
 
-  if (!m_ChunkManager)
-  {
-    TArray<AActor*> arrayChunkManager;
-
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AChunkManager::StaticClass(), arrayChunkManager);
-    check(arrayChunkManager.Num() > 0);
-
-    m_ChunkManager = Cast<AChunkManager>(arrayChunkManager[0]);
-    check(m_ChunkManager);
-
-    if (GetLocalRole() != ENetRole::ROLE_Authority)
-    {
-      m_ChunkManager->AddChunk(this);
-    }
-  }
+  FindChunkManager();
 
   if (GetLocalRole() != ENetRole::ROLE_Authority)
   {
@@ -397,5 +388,24 @@ bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, T
   }
 
   return created;
+}
+
+void AChunk::FindChunkManager()
+{
+  if (!m_ChunkManager)
+  {
+    TArray<AActor*> arrayChunkManager;
+
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AChunkManager::StaticClass(), arrayChunkManager);
+    check(arrayChunkManager.Num() > 0);
+
+    m_ChunkManager = Cast<AChunkManager>(arrayChunkManager[0]);
+    check(m_ChunkManager);
+
+    if (GetLocalRole() != ENetRole::ROLE_Authority)
+    {
+      m_ChunkManager->AddChunk(this);
+    }
+  }
 }
 
