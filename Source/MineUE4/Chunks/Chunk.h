@@ -38,6 +38,7 @@ public:
 public:	
   // Sets default values for this actor's properties
   AChunk();
+  ~AChunk();
 
   // Called every frame
   virtual void Tick(float DeltaTime) override;
@@ -46,7 +47,12 @@ public:
 
   void UpdateVisibleBlocks();
 
-  void SetBlock(FIntVector relativePos, FBlock &block);
+  void SetBlock(FIntVector& relativePos, FBlock &block);
+
+  //Get chunk pos in chunk space
+  FIntVector GetChunkPos();
+
+  FBlock* GetBlock(FIntVector& relativePos);
 
 protected:
   // Called when the game starts or when spawned
@@ -56,9 +62,11 @@ protected:
   UFUNCTION()
   void OnRep_VisibleBlocks();
 
+  uint8_t GetCubeFlags(FIntVector& relativePos);
+
   void GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color);
 
-  void GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FIntVector pos, uint8_t flags);
+  bool GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FIntVector pos, uint8_t flags);
 
   UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
   UProceduralMeshComponent* m_ProceduralMesh;
@@ -71,7 +79,7 @@ private:
   UPROPERTY()
   TSet<FIntVector>            m_VisibleBlocksPos;
 
-  //Only used at server side
+  //Server side contains every block, client side contains only visible blocks
   UPROPERTY()
   TMap<FIntVector, FBlock>	  m_AllBlocks;
 

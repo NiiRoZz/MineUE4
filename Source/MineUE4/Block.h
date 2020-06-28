@@ -21,6 +21,8 @@ public:
   UPROPERTY()
   FIntVector RelativeLocation;
 
+  bool IsTransparent();
+
   bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
 

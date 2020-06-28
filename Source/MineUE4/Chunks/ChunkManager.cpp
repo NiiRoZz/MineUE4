@@ -21,12 +21,16 @@ void AChunkManager::BeginPlay()
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    const int nmbChunk = 9;
-    for (int x = 0; x < (16 * nmbChunk); ++x)
+    const int nmbChunk = 3;
+    for (int x = 0; x < (AChunk::CHUNKSIZEX * nmbChunk); ++x)
     {
-      for (int y = 0; y < (16 * nmbChunk); ++y)
+      for (int y = 0; y < (AChunk::CHUNKSIZEY * nmbChunk); ++y)
       {
-        AddBlock(FIntVector(x, y, 0), 1);
+        for (int z = 0; z < (AChunk::CHUNKSIZEZ * nmbChunk); ++z)
+        {
+          FIntVector pos = FIntVector(x, y, z);
+          AddBlock(pos, 1);
+        }
       }
     }
 
@@ -43,7 +47,7 @@ void AChunkManager::BeginPlay()
   }
 }
 
-void AChunkManager::AddBlock(FIntVector pos, uint32 BlockType)
+void AChunkManager::AddBlock(FIntVector& pos, uint32 BlockType)
 {
   FIntVector chunkPos = FIntVector(
     pos[0] / AChunk::CHUNKSIZEX,
@@ -82,9 +86,43 @@ void AChunkManager::AddBlock(FIntVector pos, uint32 BlockType)
   chunk->SetBlock(relativePos, block);
 }
 
+void AChunkManager::AddChunk(AChunk* chunk)
+{
+  if (!chunk)
+    return;
+
+  FIntVector chunkPos = chunk->GetChunkPos();
+
+  if (!m_Chunks.Contains(chunkPos))
+  {
+    m_Chunks.Add(chunkPos, chunk);
+  }
+}
+
+void AChunkManager::RemoveChunk(AChunk* chunk)
+{
+  if (!chunk)
+    return;
+
+  m_Chunks.Remove(chunk->GetChunkPos());
+}
+
 UMaterial* AChunkManager::GetDefaultMaterialChunk()
 {
   return m_DefaultMaterialChunk;
+}
+
+FBlock* AChunkManager::GetBlock(FIntVector chunkPos, FIntVector relativePos)
+{
+  AChunk** chunkFind = m_Chunks.Find(chunkPos);
+  if (!chunkFind)
+    return nullptr;
+
+  AChunk* chunk = *chunkFind;
+  if (!chunk)
+    return nullptr;
+
+  return chunk->GetBlock(relativePos);
 }
 
 // Called every frame

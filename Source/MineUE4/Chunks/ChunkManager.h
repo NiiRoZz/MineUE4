@@ -19,9 +19,16 @@ public:
   // Called every frame
   virtual void Tick(float DeltaTime) override;
 
-  void AddBlock(FIntVector pos, uint32 BlockType);
+  void AddBlock(FIntVector& pos, uint32 BlockType);
+
+  void AddChunk(AChunk* chunk);
+
+  void RemoveChunk(AChunk* chunk);
 
   UMaterial* GetDefaultMaterialChunk();
+
+  //Pos should be in cube space
+  FBlock* GetBlock(FIntVector chunkPos, FIntVector relativePos);
 
 protected:
 	// Called when the game starts or when spawned

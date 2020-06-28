@@ -6,6 +6,19 @@
 #include "Net/UnrealNetwork.h"
 #include "Math/UnrealMathUtility.h"
 
+bool FBlock::IsTransparent()
+{
+  switch (BlockType)
+  {
+    case 0:
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool FBlock::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
   static const uint16 NMBBITSCUNKSIZEX = (uint16)FMath::Log2(AChunk::CHUNKSIZEX - 1) + 1;
