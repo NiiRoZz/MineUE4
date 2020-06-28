@@ -167,19 +167,9 @@ void AChunk::OnRep_VisibleBlocks()
 
   bool created = false;
 
-  if (GetLocalRole() == ENetRole::ROLE_Authority)
+  for (auto& visibleBlock : m_AllBlocks)
   {
-    for (auto& visibleBlock : m_VisibleBlocks.VisibleBlocks)
-    {
-      created |= GenerateCube(vertices, triangles, uvs, colors, visibleBlock.RelativeLocation, GetCubeFlags(visibleBlock.RelativeLocation));
-    }
-  }
-  else
-  {
-    for (auto& visibleBlock : m_AllBlocks)
-    {
-      created |= GenerateCube(vertices, triangles, uvs, colors, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
-    }
+    created |= GenerateCube(vertices, triangles, uvs, colors, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
   }
 
   if (created)
