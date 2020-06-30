@@ -21,9 +21,9 @@ public:
   UPROPERTY()
   FIntVector RelativeLocation;
 
-  bool IsTransparent();
+  bool IsTransluscent();
 
-  bool IsAir();
+  bool IsInvisible();
 
   bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };

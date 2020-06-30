@@ -177,13 +177,14 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
 
   FIntVector chunkPos = GetChunkPos();
+  bool imTransluscent = currBlock->IsTransluscent();
 
   //X Side
   if (relativePos[0] - 1 < 0)
   {
     FBlock* block = m_ChunkManager->GetBlock(chunkPos - FIntVector(1, 0, 0), FIntVector(CHUNKSIZEX - 1, relativePos[1], relativePos[2]));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ( ( block && ( ( block->IsTransluscent() && !imTransluscent) || block->IsInvisible() ) ) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::BACK;
     }
@@ -192,7 +193,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_AllBlocks.Find(relativePos - FIntVector(1, 0, 0));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::BACK;
     }
@@ -202,7 +203,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_ChunkManager->GetBlock(chunkPos + FIntVector(1, 0, 0), FIntVector(0, relativePos[1], relativePos[2]));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::FRONT;
     }
@@ -211,7 +212,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_AllBlocks.Find(relativePos + FIntVector(1, 0, 0));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::FRONT;
     }
@@ -222,7 +223,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_ChunkManager->GetBlock(chunkPos - FIntVector(0, 1, 0), FIntVector(relativePos[0], CHUNKSIZEY - 1, relativePos[2]));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::RIGHT;
     }
@@ -231,7 +232,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_AllBlocks.Find(relativePos - FIntVector(0, 1, 0));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::RIGHT;
     }
@@ -241,7 +242,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_ChunkManager->GetBlock(chunkPos + FIntVector(0, 1, 0), FIntVector(relativePos[0], 0, relativePos[2]));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::LEFT;
     }
@@ -250,7 +251,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_AllBlocks.Find(relativePos + FIntVector(0, 1, 0));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::LEFT;
     }
@@ -261,7 +262,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_ChunkManager->GetBlock(chunkPos - FIntVector(0, 0, 1), FIntVector(relativePos[0], relativePos[1], CHUNKSIZEZ - 1));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::BOTTOM;
     }
@@ -270,7 +271,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_AllBlocks.Find(relativePos - FIntVector(0, 0, 1));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::BOTTOM;
     }
@@ -280,7 +281,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_ChunkManager->GetBlock(chunkPos + FIntVector(0, 0, 1), FIntVector(relativePos[0], relativePos[1], 0));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::TOP;
     }
@@ -289,7 +290,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   {
     FBlock* block = m_AllBlocks.Find(relativePos + FIntVector(0, 0, 1));
 
-    if ((block && block->IsTransparent() && !currBlock->IsTransparent()) || !block)
+    if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
       flags |= (uint8_t)EChunkCubeFace::TOP;
     }
@@ -316,9 +317,9 @@ void AChunk::BuildMeshes()
 
     for (auto& visibleBlock : m_AllBlocks)
     {
-      if (!visibleBlock.Value.IsTransparent())
+      if (!visibleBlock.Value.IsTransluscent() && !visibleBlock.Value.IsInvisible())
       {
-        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
+        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.BlockType, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
       }
     }
 
@@ -341,9 +342,9 @@ void AChunk::BuildMeshes()
 
     for (auto& visibleBlock : m_AllBlocks)
     {
-      if (visibleBlock.Value.IsTransparent() && !visibleBlock.Value.IsAir())
+      if (visibleBlock.Value.IsTransluscent() && !visibleBlock.Value.IsInvisible())
       {
-        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
+        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.BlockType, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
       }
     }
 
@@ -365,7 +366,7 @@ void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, T
   normals.Append({ normal, normal, normal, normal });
 }
 
-bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FIntVector pos, uint8_t flags)
+bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, uint32 BlockType, FIntVector pos, uint8_t flags)
 {
   const FVector offset = FVector( pos * CubeSize );
 
@@ -384,32 +385,32 @@ bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, T
 
   if (flags & (uint8_t)EChunkCubeFace::BOTTOM)
   {
-    GenerateQuad( vertices, triangles, uvs, colors, normals, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, 0, -1));
+    GenerateQuad( vertices, triangles, uvs, colors, normals, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], FLinearColor((float)BlockType / 255.f, 0.f, 0.f), FVector(0, 0, -1));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::TOP)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, 0, 1));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], FLinearColor((float)BlockType / 255.f, 0.f, 0.f), FVector(0, 0, 1));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::BACK)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(-1, 0, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], FLinearColor((float)BlockType / 255.f, 0.f, 0.f), FVector(-1, 0, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::FRONT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(1, 0, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], FLinearColor((float)BlockType / 255.f, 0.f, 0.f), FVector(1, 0, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::RIGHT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, -1, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], FLinearColor((float)BlockType / 255.f, 0.f, 0.f), FVector(0, -1, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::LEFT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, 1, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], FLinearColor((float)BlockType / 255.f, 0.f, 0.f), FVector(0, 1, 0));
     created |= true;
   }
 

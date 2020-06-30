@@ -6,11 +6,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Math/UnrealMathUtility.h"
 
-bool FBlock::IsTransparent()
+bool FBlock::IsTransluscent()
 {
   switch (BlockType)
   {
-    case 0:
+    case 255:
     {
       return true;
     }
@@ -19,9 +19,18 @@ bool FBlock::IsTransparent()
   return false;
 }
 
-bool FBlock::IsAir()
+bool FBlock::IsInvisible()
 {
-  return (BlockType == 0);
+  switch (BlockType)
+  {
+    //AIR
+    case 0:
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool FBlock::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)

@@ -26,10 +26,10 @@ void AChunkManager::BeginPlay()
     {
       for (int y = 0; y < (AChunk::CHUNKSIZEY * nmbChunk); ++y)
       {
-        for (int z = 0; z < 1; ++z)
+        for (int z = 0; z < 2; ++z)
         {
           FIntVector pos = FIntVector(x, y, z);
-          AddBlock(pos, 1);
+          AddBlock(pos, (x < 16 && z == 1) ? 255 : 1);
         }
       }
     }
