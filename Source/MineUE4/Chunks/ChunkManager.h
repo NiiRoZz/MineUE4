@@ -25,7 +25,8 @@ public:
 
   void RemoveChunk(AChunk* chunk);
 
-  UMaterial* GetDefaultMaterialChunk();
+  UMaterial* GetDefaultOpaqueMaterialChunk();
+  UMaterial* GetDefaultTransluscentMaterialChunk();
 
   //Pos should be in cube space
   FBlock* GetBlock(FIntVector chunkPos, FIntVector relativePos);
@@ -35,7 +36,10 @@ protected:
 	virtual void BeginPlay() override;
 
   UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  UMaterial* m_DefaultMaterialChunk;
+  UMaterial* m_DefaultOpaqueMaterialChunk;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  UMaterial* m_DefaulTransluscentMaterialChunk;
 
 private:	
 	TMap<FIntVector, AChunk*> m_Chunks;

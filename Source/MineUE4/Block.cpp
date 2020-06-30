@@ -19,6 +19,11 @@ bool FBlock::IsTransparent()
   return false;
 }
 
+bool FBlock::IsAir()
+{
+  return (BlockType == 0);
+}
+
 bool FBlock::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
   static const uint16 NMBBITSCUNKSIZEX = (uint16)FMath::Log2(AChunk::CHUNKSIZEX - 1) + 1;

@@ -21,12 +21,12 @@ void AChunkManager::BeginPlay()
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    const int nmbChunk = 1;
+    const int nmbChunk = 3;
     for (int x = 0; x < (AChunk::CHUNKSIZEX * nmbChunk); ++x)
     {
       for (int y = 0; y < (AChunk::CHUNKSIZEY * nmbChunk); ++y)
       {
-        for (int z = 0; z < 5; ++z)
+        for (int z = 0; z < 1; ++z)
         {
           FIntVector pos = FIntVector(x, y, z);
           AddBlock(pos, 1);
@@ -107,9 +107,14 @@ void AChunkManager::RemoveChunk(AChunk* chunk)
   m_Chunks.Remove(chunk->GetChunkPos());
 }
 
-UMaterial* AChunkManager::GetDefaultMaterialChunk()
+UMaterial* AChunkManager::GetDefaultOpaqueMaterialChunk()
 {
-  return m_DefaultMaterialChunk;
+  return m_DefaultOpaqueMaterialChunk;
+}
+
+UMaterial* AChunkManager::GetDefaultTransluscentMaterialChunk()
+{
+  return m_DefaulTransluscentMaterialChunk;
 }
 
 FBlock* AChunkManager::GetBlock(FIntVector chunkPos, FIntVector relativePos)

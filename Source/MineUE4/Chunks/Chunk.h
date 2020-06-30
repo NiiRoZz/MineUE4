@@ -64,9 +64,11 @@ protected:
 
   uint8_t GetCubeFlags(FIntVector& relativePos);
 
-  void GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color);
+  void BuildMeshes();
 
-  bool GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FIntVector pos, uint8_t flags);
+  void GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color, FVector normal);
+
+  bool GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FIntVector pos, uint8_t flags);
 
   UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
   UProceduralMeshComponent* m_ProceduralMesh;

@@ -158,29 +158,7 @@ void AChunk::OnRep_VisibleBlocks()
     m_VisibleBlocks.VisibleBlocks.Empty();
   }
 
-  m_ProceduralMesh->ClearAllMeshSections();
-
-  TArray<FVector> vertices;
-  TArray<int32> triangles;
-  TArray<FVector2D> uvs;
-  TArray<FLinearColor> colors;
-
-  bool created = false;
-
-  for (auto& visibleBlock : m_AllBlocks)
-  {
-    created |= GenerateCube(vertices, triangles, uvs, colors, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
-  }
-
-  if (created)
-  {
-    m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, TArray<FVector>(), uvs, colors, TArray<FProcMeshTangent>(), false);
-
-    if (m_ChunkManager && m_ChunkManager->GetDefaultMaterialChunk())
-    {
-      m_ProceduralMesh->SetMaterial(0, m_ChunkManager->GetDefaultMaterialChunk());
-    }
-  }
+  BuildMeshes();
 }
 
 uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
@@ -320,16 +298,74 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   return flags;
 }
 
-void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color)
+void AChunk::BuildMeshes()
+{
+  ensure(m_ProceduralMesh);
+
+  m_ProceduralMesh->ClearAllMeshSections();
+
+  //Opaque blocks
+  {
+    TArray<FVector> vertices;
+    TArray<int32> triangles;
+    TArray<FVector2D> uvs;
+    TArray<FLinearColor> colors;
+    TArray<FVector> normals;
+
+    bool created = false;
+
+    for (auto& visibleBlock : m_AllBlocks)
+    {
+      if (!visibleBlock.Value.IsTransparent())
+      {
+        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
+      }
+    }
+
+    if (created && m_ChunkManager && m_ChunkManager->GetDefaultOpaqueMaterialChunk())
+    {
+      m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, uvs, colors, TArray<FProcMeshTangent>(), false);
+      m_ProceduralMesh->SetMaterial(0, m_ChunkManager->GetDefaultOpaqueMaterialChunk());
+    }
+  }
+
+  //Transluscent blocks
+  {
+    TArray<FVector> vertices;
+    TArray<int32> triangles;
+    TArray<FVector2D> uvs;
+    TArray<FLinearColor> colors;
+    TArray<FVector> normals;
+
+    bool created = false;
+
+    for (auto& visibleBlock : m_AllBlocks)
+    {
+      if (visibleBlock.Value.IsTransparent() && !visibleBlock.Value.IsAir())
+      {
+        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
+      }
+    }
+
+    if (created && m_ChunkManager && m_ChunkManager->GetDefaultTransluscentMaterialChunk())
+    {
+      m_ProceduralMesh->CreateMeshSection_LinearColor(1, vertices, triangles, normals, uvs, colors, TArray<FProcMeshTangent>(), false);
+      m_ProceduralMesh->SetMaterial(1, m_ChunkManager->GetDefaultTransluscentMaterialChunk());
+    }
+  }
+}
+
+void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color, FVector normal)
 {
   const int32 startIdx = vertices.Num();
   vertices.Append({ pos0, pos1, pos2, pos3 });
   uvs.Append({ FVector2D(0.f, 0.f), FVector2D(0.f, 1.f), FVector2D(1.f, 1.f), FVector2D(1.f, 0.f) });
   triangles.Append({ startIdx + 0, startIdx + 1, startIdx + 3, startIdx + 1, startIdx + 2, startIdx + 3 });
   colors.Append({ color, color, color, color });
+  normals.Append({ normal, normal, normal, normal });
 }
 
-bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, FIntVector pos, uint8_t flags)
+bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FIntVector pos, uint8_t flags)
 {
   const FVector offset = FVector( pos * CubeSize );
 
@@ -348,32 +384,32 @@ bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, T
 
   if (flags & (uint8_t)EChunkCubeFace::BOTTOM)
   {
-    GenerateQuad( vertices, triangles, uvs, colors, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], FLinearColor(1.f / 255.f, 0.f, 0.f));
+    GenerateQuad( vertices, triangles, uvs, colors, normals, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, 0, -1));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::TOP)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, 0, 1));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::BACK)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], FLinearColor(1.f / 255.f, 0.f, 0.f));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(-1, 0, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::FRONT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], FLinearColor(1.f / 255.f, 0.f, 0.f));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(1, 0, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::RIGHT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], FLinearColor(1.f / 255.f, 0.f, 0.f));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, -1, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::LEFT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], FLinearColor(1.f / 255.f, 0.f, 0.f), FVector(0, 1, 0));
     created |= true;
   }
 
