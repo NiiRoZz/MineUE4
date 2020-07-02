@@ -4,7 +4,10 @@
 #include "MineUE4GameModeBase.h"
 
 AMineUE4GameModeBase::AMineUE4GameModeBase()
+  : Super()
 {
-  UE_LOG(LogTemp, Warning, TEXT("AMineUE4GameModeBase"));
+  // set default pawn class to our Blueprinted character
+  static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_MineCharacter"));
+  DefaultPawnClass = PlayerPawnClassFinder.Class;
 }
 

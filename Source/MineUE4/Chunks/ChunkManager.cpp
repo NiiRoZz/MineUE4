@@ -3,6 +3,8 @@
 
 #include "ChunkManager.h"
 #include "../Block.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 // Sets default values
 AChunkManager::AChunkManager()
@@ -21,15 +23,17 @@ void AChunkManager::BeginPlay()
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    const int nmbChunk = 3;
-    for (int x = 0; x < (AChunk::CHUNKSIZEX * nmbChunk); ++x)
+    /*const int nmbChunk = 10;
+    for (int x = 0; x < (nmbChunk * AChunk::CHUNKSIZEX); ++x)
     {
-      for (int y = 0; y < (AChunk::CHUNKSIZEY * nmbChunk); ++y)
+      for (int y = 0; y < (nmbChunk * AChunk::CHUNKSIZEY); ++y)
       {
-        for (int z = 0; z < 2; ++z)
+        const float height = FMath::PerlinNoise2D(FVector2D(x, y) / 64) * 8 + 8;
+
+        for (int z = 0; z < height; ++z)
         {
           FIntVector pos = FIntVector(x, y, z);
-          AddBlock(pos, (x < 16 && z == 1) ? 255 : 1);
+          AddBlock(pos, 1);
         }
       }
     }
@@ -41,7 +45,7 @@ void AChunkManager::BeginPlay()
         currChunk.Value->UpdateVisibleBlocks();
         currChunk.Value->FlushNetDormancy();
       }
-    }
+    }*/
 
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay End"));
   }
@@ -72,18 +76,37 @@ void AChunkManager::AddBlock(FIntVector& pos, uint32 BlockType)
   }
   else
   {
-    FVector realPosChunk = FVector(
-      chunkPos[0] * AChunk::CHUNKSIZEX * AChunk::CubeSize,
-      chunkPos[1] * AChunk::CHUNKSIZEY * AChunk::CubeSize,
-      chunkPos[2] * AChunk::CHUNKSIZEZ * AChunk::CubeSize
-    );
+    chunk = CreateChunk(chunkPos);
 
-    chunk = GetWorld()->SpawnActor<AChunk>(realPosChunk, FRotator(0.0));
-    m_Chunks.Add(chunkPos, chunk);
+    if (chunk)
+      m_Chunks.Add(chunkPos, chunk);
   }
   check(chunk);
 
   chunk->SetBlock(relativePos, block);
+}
+
+AChunk* AChunkManager::CreateChunk(FIntVector chunkPos)
+{
+  if (m_Chunks.Contains(chunkPos))
+  {
+    return nullptr;
+  }
+
+  FVector realPosChunk = FVector(
+    chunkPos[0] * AChunk::CHUNKSIZEX * AChunk::CubeSize,
+    chunkPos[1] * AChunk::CHUNKSIZEY * AChunk::CubeSize,
+    chunkPos[2] * AChunk::CHUNKSIZEZ * AChunk::CubeSize
+  );
+
+  AChunk* chunk = GetWorld()->SpawnActor<AChunk>(realPosChunk, FRotator(0.0));
+  if (chunk)
+  {
+    chunk->Generate();
+    m_Chunks.Add(chunkPos, chunk);
+  }
+
+  return chunk;
 }
 
 void AChunkManager::AddChunk(AChunk* chunk)
@@ -130,10 +153,67 @@ FBlock* AChunkManager::GetBlock(FIntVector chunkPos, FIntVector relativePos)
   return chunk->GetBlock(relativePos);
 }
 
+AChunk** AChunkManager::GetChunk(FIntVector chunkPos)
+{
+  return m_Chunks.Find(chunkPos);
+}
+
 // Called every frame
 void AChunkManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+  //Only at server side
+  if (GetLocalRole() == ENetRole::ROLE_Authority)
+  {
+    TArray<AActor*> Playersarray;
+
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), Playersarray);
+
+    UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 1 %d"), Playersarray.Num());
+
+    for (auto player : Playersarray)
+    {
+      APlayerController * currController = Cast<APlayerController>(player);
+      UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 2 %p %p"), currController, currController->GetCharacter());
+      if (currController)
+      {
+        FVector playerLocation;
+
+        if (currController->GetCharacter())
+        {
+          playerLocation  = currController->GetCharacter()->GetActorLocation();
+        }
+        else
+        {
+          FRotator rotation;
+          currController->GetActorEyesViewPoint(playerLocation, rotation);
+        }
+
+        UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 3 %f %f %f"), playerLocation[0], playerLocation[1], playerLocation[2]);
+
+        FIntVector playerChunkCoords = FIntVector(
+          playerLocation[0] / AChunk::CHUNKSIZEX / AChunk::CubeSize,
+          playerLocation[1] / AChunk::CHUNKSIZEY / AChunk::CubeSize,
+          playerLocation[2] / AChunk::CHUNKSIZEZ / AChunk::CubeSize
+        );
+
+        for (int x = -CHUNKRENDERDISTANCE; x < CHUNKRENDERDISTANCE; ++x)
+        {
+          for (int y = -CHUNKRENDERDISTANCE; y < CHUNKRENDERDISTANCE; ++y)
+          {
+            AChunk* chunk = CreateChunk(FIntVector(playerChunkCoords[0] + x, playerChunkCoords[1] + y, 0));
+
+            //We created the chunk
+            if (chunk)
+            {
+              chunk->UpdateVisibleBlocks();
+              chunk->FlushNetDormancy();
+            }
+          }
+        }
+      }
+    }
+  }
 }
 

@@ -11,6 +11,9 @@ UCLASS()
 class MINEUE4_API AChunkManager : public AActor
 {
 	GENERATED_BODY()
+
+public:
+  static const int CHUNKRENDERDISTANCE = 15;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -21,6 +24,8 @@ public:
 
   void AddBlock(FIntVector& pos, uint32 BlockType);
 
+  AChunk* CreateChunk(FIntVector chunkPos);
+
   void AddChunk(AChunk* chunk);
 
   void RemoveChunk(AChunk* chunk);
@@ -30,6 +35,8 @@ public:
 
   //Pos should be in cube space
   FBlock* GetBlock(FIntVector chunkPos, FIntVector relativePos);
+
+  AChunk** GetChunk(FIntVector chunkPos);
 
 protected:
 	// Called when the game starts or when spawned

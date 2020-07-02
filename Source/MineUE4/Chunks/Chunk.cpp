@@ -140,6 +140,29 @@ FBlock* AChunk::GetBlock(FIntVector& relativePos)
   return m_AllBlocks.Find(relativePos);
 }
 
+void AChunk::Generate()
+{
+  FIntVector chunkPos = GetChunkPos();
+
+  for (int x = 0; x < CHUNKSIZEX; ++x)
+  {
+    for (int y = 0; y < CHUNKSIZEY; ++y)
+    {
+      FVector2D WorldBlockCoord = FVector2D(x + chunkPos[0] * CHUNKSIZEX, y + chunkPos[1] * CHUNKSIZEY);
+      const float height = FMath::PerlinNoise2D(WorldBlockCoord / 64) * 8 + 8;
+
+      for (int z = 0; z < height; ++z)
+      {
+        FBlock newBlock;
+        newBlock.RelativeLocation = FIntVector(x, y, z);
+        newBlock.BlockType = 1;
+
+        SetBlock(newBlock.RelativeLocation, newBlock);
+      }
+    }
+  }
+}
+
 void AChunk::OnRep_VisibleBlocks()
 {
   UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.VisibleBlocks.Num());
@@ -159,6 +182,26 @@ void AChunk::OnRep_VisibleBlocks()
   }
 
   BuildMeshes();
+
+  //Update adjacent chunks
+  FIntVector myChunkPos = GetChunkPos();
+
+  TArray<FIntVector> adjPosses = { FIntVector(1, 0, 0), FIntVector(0, 1, 0), FIntVector(0, 0, 1) };
+
+  for (auto& adjPos : adjPosses)
+  {
+    AChunk** adjacentChunk = m_ChunkManager->GetChunk(myChunkPos - adjPos);
+    if (adjacentChunk)
+    {
+      (*adjacentChunk)->BuildMeshes();
+    }
+
+    adjacentChunk = m_ChunkManager->GetChunk(myChunkPos + adjPos);
+    if (adjacentChunk)
+    {
+      (*adjacentChunk)->BuildMeshes();
+    }
+  }
 }
 
 uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
@@ -325,7 +368,7 @@ void AChunk::BuildMeshes()
 
     if (created && m_ChunkManager && m_ChunkManager->GetDefaultOpaqueMaterialChunk())
     {
-      m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, uvs, colors, TArray<FProcMeshTangent>(), false);
+      m_ProceduralMesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, uvs, colors, TArray<FProcMeshTangent>(), true);
       m_ProceduralMesh->SetMaterial(0, m_ChunkManager->GetDefaultOpaqueMaterialChunk());
     }
   }

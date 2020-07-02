@@ -54,6 +54,10 @@ public:
 
   FBlock* GetBlock(FIntVector& relativePos);
 
+  void Generate();
+
+  void BuildMeshes();
+
 protected:
   // Called when the game starts or when spawned
   virtual void BeginPlay() override;
@@ -63,8 +67,6 @@ protected:
   void OnRep_VisibleBlocks();
 
   uint8_t GetCubeFlags(FIntVector& relativePos);
-
-  void BuildMeshes();
 
   void GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color, FVector normal);
 
