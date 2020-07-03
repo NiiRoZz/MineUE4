@@ -16,6 +16,10 @@ AChunk::AChunk()
 
   m_ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>("ProceduralMesh");
   RootComponent = m_ProceduralMesh;
+
+  bReplicates = true;
+
+  m_AllBlocks.SetNumZeroed(CHUNKSIZEX * CHUNKSIZEY * CHUNKSIZEZ);
 }
 
 AChunk::~AChunk()
@@ -30,11 +34,6 @@ AChunk::~AChunk()
 void AChunk::BeginPlay()
 {
   Super::BeginPlay();
-
-  if (GetLocalRole() == ROLE_Authority)
-  {
-    SetReplicates(true);
-  }
 
   SetNetDormancy(ENetDormancy::DORM_DormantAll);
   NetCullDistanceSquared = 368640000.f;
@@ -56,74 +55,50 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 {
   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-  DOREPLIFETIME(AChunk, m_VisibleBlocks);
+  DOREPLIFETIME(AChunk, m_CompressedBlocks);
 }
 
-void AChunk::UpdateVisibleBlocks()
+void AChunk::UpdateCompressedBlocks()
 {
-  //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateVisibleBlocks 1 %d"), m_AllBlocks.Num());
+  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateCompressedBlocks 1 %d"), m_AllBlocks.Num());
 
   FindChunkManager();
 
+  m_CompressedBlocks.Empty();
+
+  FCompressedBlock compressedBlock;
+  compressedBlock.BlockType = m_AllBlocks[0].BlockType;
+  compressedBlock.NmbBlocks = 0;
+
   for (auto& currBlock : m_AllBlocks)
   {
-    bool remove = (currBlock.Value.BlockType == 0 || GetCubeFlags(currBlock.Key) == 0);
-
-    if (m_VisibleBlocksPos.Contains(currBlock.Key))
+    if (currBlock.BlockType == compressedBlock.BlockType)
     {
-      for (int32 i = 0; i < m_VisibleBlocks.VisibleBlocks.Num(); ++i)
-      {
-        if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation == currBlock.Key)
-        {
-          // If it's undesired block, we remove it
-          if (remove)
-          {
-            m_VisibleBlocksPos.Remove(currBlock.Key);
-            m_VisibleBlocks.VisibleBlocks.RemoveAt(i, 1, false);
-            m_VisibleBlocks.MarkArrayDirty();
-          }
-          else if (m_VisibleBlocks.VisibleBlocks[i].RelativeLocation != currBlock.Value.RelativeLocation && m_VisibleBlocks.VisibleBlocks[i].BlockType != currBlock.Value.BlockType)
-          {
-            m_VisibleBlocks.VisibleBlocks[i].BlockType = currBlock.Value.BlockType;
-            m_VisibleBlocks.VisibleBlocks[i].RelativeLocation = currBlock.Value.RelativeLocation;
-            m_VisibleBlocks.MarkItemDirty(m_VisibleBlocks.VisibleBlocks[i]);
-          }
-
-          break;
-        }
-      }
+      compressedBlock.NmbBlocks++;
     }
     else
     {
-      // If it's undesired block, we don't care
-      if (remove)
-      {
-        continue;
-      }
+      m_CompressedBlocks.Add(compressedBlock);
 
-      m_VisibleBlocks.MarkItemDirty(m_VisibleBlocks.VisibleBlocks.Add_GetRef(currBlock.Value));
-      m_VisibleBlocksPos.Add(currBlock.Key);
+      compressedBlock = FCompressedBlock();
+      compressedBlock.BlockType = currBlock.BlockType;
+      compressedBlock.NmbBlocks = 1;
     }
   }
 
+  //m_CompressedBlocks.MarkArrayDirty();
+
   if (GetLocalRole() == ENetRole::ROLE_Authority)
   {
-    OnRep_VisibleBlocks();
+    OnRep_CompressedBlocks();
   }
 
-  //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateVisibleBlocks 2 %d"), m_VisibleBlocks.VisibleBlocks.Num());
+  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateCompressedBlocks 2 %d"), m_CompressedBlocks.Num());
 }
 
-void AChunk::SetBlock(FIntVector& relativePos, FBlock& block)
+void AChunk::SetBlock(FIntVector relativePos, FBlock& block)
 {
-  if (m_AllBlocks.Contains(relativePos))
-  {
-    m_AllBlocks[relativePos] = block;
-  }
-  else
-  {
-    m_AllBlocks.Add(relativePos, block);
-  }
+  m_AllBlocks[Get1DIndex(relativePos)].CopyFrom(block);
 }
 
 FIntVector AChunk::GetChunkPos()
@@ -137,7 +112,7 @@ FIntVector AChunk::GetChunkPos()
 
 FBlock* AChunk::GetBlock(FIntVector& relativePos)
 {
-  return m_AllBlocks.Find(relativePos);
+  return &(m_AllBlocks[Get1DIndex(relativePos)]);
 }
 
 void AChunk::Generate()
@@ -165,7 +140,6 @@ void AChunk::Generate()
       for (int z = 0; z < CHUNKSIZEZ; ++z)
       {
         FBlock newBlock;
-        newBlock.RelativeLocation = FIntVector(x, y, z);
         bool created = false;
 
         //Stone
@@ -186,7 +160,7 @@ void AChunk::Generate()
         }
 
         if (created)
-          SetBlock(newBlock.RelativeLocation, newBlock);
+          SetBlock(FIntVector(x, y, z), newBlock);
       }
     }
   }
@@ -208,11 +182,14 @@ void AChunk::BuildMeshes()
 
     bool created = false;
 
-    for (auto& visibleBlock : m_AllBlocks)
+    for (int i = 0; i < m_AllBlocks.Num(); ++i)
     {
-      if (!visibleBlock.Value.IsTransluscent() && !visibleBlock.Value.IsInvisible())
+      FBlock &currBlock = m_AllBlocks[i];
+
+      if (!currBlock.IsTransluscent() && !currBlock.IsInvisible())
       {
-        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.BlockType, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
+        FIntVector pos = Get3DPosition(i);
+        created |= GenerateCube(vertices, triangles, uvs, colors, normals, currBlock.BlockType, pos, GetCubeFlags(pos));
       }
     }
 
@@ -233,11 +210,14 @@ void AChunk::BuildMeshes()
 
     bool created = false;
 
-    for (auto& visibleBlock : m_AllBlocks)
+    for (int i = 0; i < m_AllBlocks.Num(); ++i)
     {
-      if (visibleBlock.Value.IsTransluscent() && !visibleBlock.Value.IsInvisible())
+      FBlock& currBlock = m_AllBlocks[i];
+
+      if (currBlock.IsTransluscent() && !currBlock.IsInvisible())
       {
-        created |= GenerateCube(vertices, triangles, uvs, colors, normals, visibleBlock.Value.BlockType, visibleBlock.Value.RelativeLocation, GetCubeFlags(visibleBlock.Value.RelativeLocation));
+        FIntVector pos = Get3DPosition(i);
+        created |= GenerateCube(vertices, triangles, uvs, colors, normals, currBlock.BlockType, pos, GetCubeFlags(pos));
       }
     }
 
@@ -249,22 +229,25 @@ void AChunk::BuildMeshes()
   }
 }
 
-void AChunk::OnRep_VisibleBlocks()
+void AChunk::OnRep_CompressedBlocks()
 {
-  //UE_LOG(LogTemp, Warning, TEXT("OnRep_VisibleBlocks 1 %d"), m_VisibleBlocks.VisibleBlocks.Num());
+  UE_LOG(LogTemp, Warning, TEXT("OnRep_CompressedBlocks 1 %d"), m_CompressedBlocks.Num());
 
   FindChunkManager();
 
   if (GetLocalRole() != ENetRole::ROLE_Authority)
   {
-    m_AllBlocks.Empty();
-
-    for (auto& visibleBlock : m_VisibleBlocks.VisibleBlocks)
+    int idx = 0;
+    for (auto& compressedBlock : m_CompressedBlocks)
     {
-      m_AllBlocks.Add( visibleBlock.RelativeLocation, visibleBlock);
-    }
+      FBlock block;
+      block.CopyFrom(compressedBlock);
 
-    m_VisibleBlocks.VisibleBlocks.Empty();
+      for (uint32 i = 0; i < compressedBlock.NmbBlocks; ++i)
+      {
+        SetBlock(Get3DPosition(idx++), block);
+      }
+    }
   }
 
   BuildMeshes();
@@ -299,7 +282,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
     return flags;
   }
 
-  FBlock* currBlock = m_AllBlocks.Find(relativePos);
+  FBlock* currBlock = &(m_AllBlocks[Get1DIndex(relativePos)]);
   if (!currBlock)
   {
     return flags;
@@ -320,7 +303,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
   else
   {
-    FBlock* block = m_AllBlocks.Find(relativePos - FIntVector(1, 0, 0));
+    FBlock* block = &(m_AllBlocks[Get1DIndex(relativePos - FIntVector(1, 0, 0))]);
 
     if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
@@ -339,7 +322,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
   else
   {
-    FBlock* block = m_AllBlocks.Find(relativePos + FIntVector(1, 0, 0));
+    FBlock* block = &(m_AllBlocks[Get1DIndex(relativePos + FIntVector(1, 0, 0))]);
 
     if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
@@ -359,7 +342,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
   else
   {
-    FBlock* block = m_AllBlocks.Find(relativePos - FIntVector(0, 1, 0));
+    FBlock* block = &(m_AllBlocks[Get1DIndex(relativePos - FIntVector(0, 1, 0))]);
 
     if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
@@ -378,7 +361,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
   else
   {
-    FBlock* block = m_AllBlocks.Find(relativePos + FIntVector(0, 1, 0));
+    FBlock* block = &(m_AllBlocks[Get1DIndex(relativePos + FIntVector(0, 1, 0))]);
 
     if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
@@ -398,7 +381,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
   else
   {
-    FBlock* block = m_AllBlocks.Find(relativePos - FIntVector(0, 0, 1));
+    FBlock* block = &(m_AllBlocks[Get1DIndex(relativePos - FIntVector(0, 0, 1))]);
 
     if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
@@ -417,7 +400,7 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   }
   else
   {
-    FBlock* block = m_AllBlocks.Find(relativePos + FIntVector(0, 0, 1));
+    FBlock* block = &(m_AllBlocks[Get1DIndex(relativePos + FIntVector(0, 0, 1))]);
 
     if ((block && ((block->IsTransluscent() && !imTransluscent) || block->IsInvisible())) || !block)
     {
@@ -533,5 +516,19 @@ void AChunk::FindChunkManager()
       m_ChunkManager->AddChunk(this);
     }
   }
+}
+
+int AChunk::Get1DIndex(FIntVector pos)
+{
+  return (pos.X + pos.Y * CHUNKSIZEX + pos.Z * CHUNKSIZEXY);
+}
+
+FIntVector AChunk::Get3DPosition(int idx)
+{
+  return FIntVector(
+    idx % CHUNKSIZEX,
+    (idx / CHUNKSIZEX) % CHUNKSIZEY,
+    idx / CHUNKSIZEXY
+  );
 }
 

@@ -3,28 +3,47 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Block.h"
+#include "Serialization/Archive.h"
 #include "BlockArray.generated.h"
 
-/**
- * 
- */
 USTRUCT()
-struct MINEUE4_API FBlockArray : public FFastArraySerializer
+struct FCompressedBlock : public FFastArraySerializerItem
+{
+  GENERATED_BODY()
+
+  uint32 BlockType = 0;
+
+  uint32 NmbBlocks = 1;
+
+  bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+};
+
+template<>
+struct TStructOpsTypeTraits<FCompressedBlock> : public TStructOpsTypeTraitsBase2<FCompressedBlock>
+{
+  enum
+  {
+    WithNetSerializer = true
+  };
+};
+
+
+USTRUCT()
+struct MINEUE4_API FCompressedBlockArray : public FFastArraySerializer
 {
   GENERATED_BODY()
 
   UPROPERTY()
-  TArray<FBlock>  VisibleBlocks;
+  TArray<FCompressedBlock>  AllCompressedBlocks;
 
   bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
   {
-    return FFastArraySerializer::FastArrayDeltaSerialize<FBlock, FBlockArray>(VisibleBlocks, DeltaParms, *this);
+    return FFastArraySerializer::FastArrayDeltaSerialize<FCompressedBlock, FCompressedBlockArray>(AllCompressedBlocks, DeltaParms, *this);
   }
 };
 
 template<>
-struct TStructOpsTypeTraits< FBlockArray > : public TStructOpsTypeTraitsBase2< FBlockArray >
+struct TStructOpsTypeTraits< FCompressedBlockArray > : public TStructOpsTypeTraitsBase2< FCompressedBlockArray >
 {
   enum
   {

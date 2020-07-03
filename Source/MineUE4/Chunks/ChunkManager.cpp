@@ -43,7 +43,6 @@ void AChunkManager::AddBlock(FIntVector& pos, uint32 BlockType)
 
   FBlock block;
   block.BlockType = BlockType;
-  block.RelativeLocation = relativePos;
 
   AChunk* chunk;
   if (m_Chunks.Contains(chunkPos))
@@ -210,7 +209,7 @@ void AChunkManager::Tick(float DeltaTime)
               if (chunk)
               {
                 nmbChunkGenerated++;
-                chunk->UpdateVisibleBlocks();
+                chunk->UpdateCompressedBlocks();
                 chunk->FlushNetDormancy();
               }
 
@@ -220,7 +219,7 @@ void AChunkManager::Tick(float DeltaTime)
               if (chunk2)
               {
                 nmbChunkGenerated++;
-                chunk2->UpdateVisibleBlocks();
+                chunk2->UpdateCompressedBlocks();
                 chunk2->FlushNetDormancy();
               }
 
@@ -230,7 +229,7 @@ void AChunkManager::Tick(float DeltaTime)
               if (chunk3)
               {
                 nmbChunkGenerated++;
-                chunk3->UpdateVisibleBlocks();
+                chunk3->UpdateCompressedBlocks();
                 chunk3->FlushNetDormancy();
               }
 
@@ -240,7 +239,7 @@ void AChunkManager::Tick(float DeltaTime)
               if (chunk4)
               {
                 nmbChunkGenerated++;
-                chunk4->UpdateVisibleBlocks();
+                chunk4->UpdateCompressedBlocks();
                 chunk4->FlushNetDormancy();
               }
             }

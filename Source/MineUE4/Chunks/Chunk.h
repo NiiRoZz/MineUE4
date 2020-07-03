@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 #include "Engine/ActorChannel.h"
+#include "../Block.h"
 #include "../BlockArray.h"
 #include "Chunk.generated.h"
 
@@ -30,7 +31,7 @@ class MINEUE4_API AChunk : public AActor
 public:
   static const uint16 CHUNKSIZEX = 16u;
   static const uint16 CHUNKSIZEY = 16u;
-  static const uint16 CHUNKSIZEZ = 64u;
+  static const uint16 CHUNKSIZEZ = 32u;
   static const uint16 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
   static const uint16 CubeSize = 100u;
   static const uint16 MAXTYPEOFBLOCKS = 256u;
@@ -45,9 +46,9 @@ public:
 
   void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-  void UpdateVisibleBlocks();
+  void UpdateCompressedBlocks();
 
-  void SetBlock(FIntVector& relativePos, FBlock &block);
+  void SetBlock(FIntVector relativePos, FBlock &block);
 
   //Get chunk pos in chunk space
   FIntVector GetChunkPos();
@@ -64,7 +65,7 @@ protected:
 
   /** "On receive chunk data" logic. Client-side*/
   UFUNCTION()
-  void OnRep_VisibleBlocks();
+  void OnRep_CompressedBlocks();
 
   FLinearColor GetTextureForCube(uint32 blockType, EChunkCubeFace face);
 
@@ -81,16 +82,18 @@ private:
 
   void FindChunkManager();
 
-  UPROPERTY(ReplicatedUsing = OnRep_VisibleBlocks)
-  FBlockArray	                m_VisibleBlocks;
+  int Get1DIndex(FIntVector pos);
+  FIntVector Get3DPosition(int idx);
+
+  UPROPERTY(ReplicatedUsing = OnRep_CompressedBlocks)
+  TArray<FCompressedBlock>                                                m_CompressedBlocks;
 
   UPROPERTY()
-  TSet<FIntVector>            m_VisibleBlocksPos;
+  TSet<FIntVector>                                                        m_VisibleBlocksPos;
 
-  //Server side contains every block, client side contains only visible blocks
-  UPROPERTY()
-  TMap<FIntVector, FBlock>	  m_AllBlocks;
+  //Contains every block
+  TArray<FBlock, TFixedAllocator<CHUNKSIZEX * CHUNKSIZEY * CHUNKSIZEZ>>   m_AllBlocks;
 
   UPROPERTY()
-  AChunkManager*              m_ChunkManager;
+  AChunkManager*                                                          m_ChunkManager;
 };
