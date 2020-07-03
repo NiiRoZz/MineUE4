@@ -19,36 +19,12 @@ void AChunkManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-  if (GetLocalRole() == ENetRole::ROLE_Authority)
+  /*if (GetLocalRole() == ENetRole::ROLE_Authority)
   {
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay"));
 
-    /*const int nmbChunk = 10;
-    for (int x = 0; x < (nmbChunk * AChunk::CHUNKSIZEX); ++x)
-    {
-      for (int y = 0; y < (nmbChunk * AChunk::CHUNKSIZEY); ++y)
-      {
-        const float height = FMath::PerlinNoise2D(FVector2D(x, y) / 64) * 8 + 8;
-
-        for (int z = 0; z < height; ++z)
-        {
-          FIntVector pos = FIntVector(x, y, z);
-          AddBlock(pos, 1);
-        }
-      }
-    }
-
-    for (auto& currChunk : m_Chunks)
-    {
-      if (currChunk.Value)
-      {
-        currChunk.Value->UpdateVisibleBlocks();
-        currChunk.Value->FlushNetDormancy();
-      }
-    }*/
-
     UE_LOG(LogTemp, Warning, TEXT("AChunkManager::BeginPlay End"));
-  }
+  }*/
 }
 
 void AChunkManager::AddBlock(FIntVector& pos, uint32 BlockType)
@@ -166,31 +142,48 @@ void AChunkManager::Tick(float DeltaTime)
   //Only at server side
   if (GetLocalRole() == ENetRole::ROLE_Authority)
   {
-    TArray<AActor*> Playersarray;
+    TArray<AActor*> allPlayers;
 
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), Playersarray);
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), allPlayers);
 
-    UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 1 %d"), Playersarray.Num());
+    //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 1 %d"), allPlayers.Num());
 
-    for (auto player : Playersarray)
+    //Find the deleted chunks
+    TArray<FIntVector> allDeletedChunks;
+    for (auto& currChunk : m_Chunks)
     {
-      APlayerController * currController = Cast<APlayerController>(player);
-      UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 2 %p %p"), currController, currController->GetCharacter());
+      if (!IsPlayerNearby(currChunk.Value, allPlayers))
+      {
+        allDeletedChunks.Add(currChunk.Key);
+      }
+    }
+
+    if (allDeletedChunks.Num() > 0)
+    {
+      UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 2 %d"), allDeletedChunks.Num());
+    }
+
+    //Delete chunks
+    for (auto& currChunk : allDeletedChunks)
+    {
+      AChunk* chunk = m_Chunks.FindAndRemoveChecked(currChunk);
+      if (!chunk)
+      {
+        continue;
+      }
+      chunk->Destroy();
+    }
+
+    //Spawn new chunks
+    for (auto player : allPlayers)
+    {
+      APlayerController* currController = Cast<APlayerController>(player);
+      //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 3 %p %p"), currController, currController->GetCharacter());
       if (currController)
       {
-        FVector playerLocation;
+        FVector playerLocation = GetPlayerLocation(currController);
 
-        if (currController->GetCharacter())
-        {
-          playerLocation  = currController->GetCharacter()->GetActorLocation();
-        }
-        else
-        {
-          FRotator rotation;
-          currController->GetActorEyesViewPoint(playerLocation, rotation);
-        }
-
-        UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 3 %f %f %f"), playerLocation[0], playerLocation[1], playerLocation[2]);
+        //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 4 %f %f %f"), playerLocation[0], playerLocation[1], playerLocation[2]);
 
         FIntVector playerChunkCoords = FIntVector(
           playerLocation[0] / AChunk::CHUNKSIZEX / AChunk::CubeSize,
@@ -198,22 +191,121 @@ void AChunkManager::Tick(float DeltaTime)
           playerLocation[2] / AChunk::CHUNKSIZEZ / AChunk::CubeSize
         );
 
-        for (int x = -CHUNKRENDERDISTANCE; x < CHUNKRENDERDISTANCE; ++x)
-        {
-          for (int y = -CHUNKRENDERDISTANCE; y < CHUNKRENDERDISTANCE; ++y)
-          {
-            AChunk* chunk = CreateChunk(FIntVector(playerChunkCoords[0] + x, playerChunkCoords[1] + y, 0));
+        uint8 nmbChunkGenerated = 0;
 
-            //We created the chunk
-            if (chunk)
+        for (int x = 0; x <= CHUNKRENDERDISTANCEX; ++x)
+        {
+          for (int y = 0; y <= CHUNKRENDERDISTANCEY; ++y)
+          {
+            for (int z = 0; z <= CHUNKRENDERDISTANCEZ; ++z)
             {
-              chunk->UpdateVisibleBlocks();
-              chunk->FlushNetDormancy();
+              if (nmbChunkGenerated > 5)
+              {
+                return;
+              }
+
+              AChunk* chunk = CreateChunk(FIntVector(playerChunkCoords.X + x, playerChunkCoords.Y + y, 0/*playerChunkCoords.Z + z*/));
+
+              //We created the chunk
+              if (chunk)
+              {
+                nmbChunkGenerated++;
+                chunk->UpdateVisibleBlocks();
+                chunk->FlushNetDormancy();
+              }
+
+              AChunk* chunk2 = CreateChunk(FIntVector(playerChunkCoords.X - x, playerChunkCoords.Y - y, 0/*playerChunkCoords.Z + z*/));
+
+              //We created the chunk
+              if (chunk2)
+              {
+                nmbChunkGenerated++;
+                chunk2->UpdateVisibleBlocks();
+                chunk2->FlushNetDormancy();
+              }
+
+              AChunk* chunk3 = CreateChunk(FIntVector(playerChunkCoords.X + x, playerChunkCoords.Y - y, 0/*playerChunkCoords.Z + z*/));
+
+              //We created the chunk
+              if (chunk3)
+              {
+                nmbChunkGenerated++;
+                chunk3->UpdateVisibleBlocks();
+                chunk3->FlushNetDormancy();
+              }
+
+              AChunk* chunk4 = CreateChunk(FIntVector(playerChunkCoords.X - x, playerChunkCoords.Y + y, 0/*playerChunkCoords.Z + z*/));
+
+              //We created the chunk
+              if (chunk4)
+              {
+                nmbChunkGenerated++;
+                chunk4->UpdateVisibleBlocks();
+                chunk4->FlushNetDormancy();
+              }
             }
           }
         }
       }
     }
   }
+}
+
+FVector AChunkManager::GetPlayerLocation(APlayerController* playerController) const
+{
+  FVector playerLocation(0.f);
+
+  if (!ensure(playerController))
+  {
+    return playerLocation;
+  }
+
+  if (playerController->GetCharacter())
+  {
+    playerLocation = playerController->GetCharacter()->GetActorLocation();
+  }
+  else
+  {
+    FRotator rotation;
+    playerController->GetActorEyesViewPoint(playerLocation, rotation);
+  }
+
+  return playerLocation;
+}
+
+bool AChunkManager::IsPlayerNearby(AChunk* chunk, TArray<AActor*>& allPlayers) const
+{
+  if (!ensure(chunk))
+  {
+    return false;
+  }
+
+  FIntVector chunkLocation = chunk->GetChunkPos();
+
+  for (auto player : allPlayers)
+  {
+    APlayerController* currController = Cast<APlayerController>(player);
+
+    if (currController)
+    {
+      FVector playerLocation = GetPlayerLocation(currController);
+      FIntVector playerChunkCoords = FIntVector(
+        playerLocation[0] / AChunk::CHUNKSIZEX / AChunk::CubeSize,
+        playerLocation[1] / AChunk::CHUNKSIZEY / AChunk::CubeSize,
+        playerLocation[2] / AChunk::CHUNKSIZEZ / AChunk::CubeSize
+      );
+
+      //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::IsPlayerNearby 1 %d %d %d"), chunkLocation.X, chunkLocation.Y, chunkLocation.Z);
+      //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::IsPlayerNearby 2 %d %d %d"), playerChunkCoords.X, playerChunkCoords.Y, playerChunkCoords.Z);
+      //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::IsPlayerNearby 1 %s %d %d %d\n"), *(chunk->GetActorLabel()), FMath::Abs(chunkLocation.X - playerChunkCoords.X), FMath::Abs(chunkLocation.Y - playerChunkCoords.Y), FMath::Abs(chunkLocation.Z - playerChunkCoords.Z));
+
+      if (FMath::Abs(chunkLocation.X - playerChunkCoords.X) <= CHUNKRENDERDISTANCEX && FMath::Abs(chunkLocation.Y - playerChunkCoords.Y) <= CHUNKRENDERDISTANCEY /*|| FMath::Abs(chunkLocation.Z - playerChunkCoords.Z) < CHUNKRENDERDISTANCE*/)
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 

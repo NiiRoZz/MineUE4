@@ -13,7 +13,9 @@ class MINEUE4_API AChunkManager : public AActor
 	GENERATED_BODY()
 
 public:
-  static const int CHUNKRENDERDISTANCE = 15;
+  static const int CHUNKRENDERDISTANCEX = 13;
+  static const int CHUNKRENDERDISTANCEY = 13;
+  static const int CHUNKRENDERDISTANCEZ = 0;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -41,6 +43,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+  FVector GetPlayerLocation(APlayerController* playerController) const;
+
+  bool IsPlayerNearby(AChunk* chunk, TArray<AActor*>& allPlayers) const;
 
   UPROPERTY(EditAnywhere, BlueprintReadWrite)
   UMaterial* m_DefaultOpaqueMaterialChunk;

@@ -30,10 +30,10 @@ class MINEUE4_API AChunk : public AActor
 public:
   static const uint16 CHUNKSIZEX = 16u;
   static const uint16 CHUNKSIZEY = 16u;
-  static const uint16 CHUNKSIZEZ = 32u;
+  static const uint16 CHUNKSIZEZ = 64u;
   static const uint16 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
-  static const uint16 CubeSize = 100;
-  static const uint16 MAXTYPEOFBLOCKS = 256;
+  static const uint16 CubeSize = 100u;
+  static const uint16 MAXTYPEOFBLOCKS = 256u;
   
 public:	
   // Sets default values for this actor's properties
@@ -66,11 +66,13 @@ protected:
   UFUNCTION()
   void OnRep_VisibleBlocks();
 
+  FLinearColor GetTextureForCube(uint32 blockType, EChunkCubeFace face);
+
   uint8_t GetCubeFlags(FIntVector& relativePos);
 
   void GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color, FVector normal);
 
-  bool GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, uint32 BlockType, FIntVector pos, uint8_t flags);
+  bool GenerateCube(TArray<FVector> &vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, uint32 blockType, FIntVector pos, uint8_t flags);
 
   UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
   UProceduralMeshComponent* m_ProceduralMesh;
