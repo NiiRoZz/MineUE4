@@ -16,7 +16,7 @@ struct MINEUE4_API FBlock
 
 public:
   UPROPERTY()
-  uint32 BlockType = 0;
+  int32 BlockType = -1;
 
   bool IsTransluscent();
 

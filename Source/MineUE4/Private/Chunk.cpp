@@ -3,6 +3,7 @@
 
 #include "Chunk.h"
 #include "ChunkManager.h"
+#include "BlockTypeRegistery.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -10,7 +11,7 @@
 AChunk::AChunk()
 {
   // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-  PrimaryActorTick.bCanEverTick = true;
+  PrimaryActorTick.bCanEverTick = false;
 
   m_ChunkManager = nullptr;
 
@@ -44,11 +45,6 @@ void AChunk::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
 
-  //Only at server side
-  if (GetLocalRole() == ENetRole::ROLE_Authority)
-  {
-
-  }
 }
 
 void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -137,32 +133,36 @@ void AChunk::Generate()
 
       const int finalHeight = height;
 
+      static const int32 airID = ABlockTypeRegistery::BlockTypeRegistery->GetBlockIdFromName("Air");
+      static const int32 stoneID = ABlockTypeRegistery::BlockTypeRegistery->GetBlockIdFromName("Stone");
+      static const int32 dirtID = ABlockTypeRegistery::BlockTypeRegistery->GetBlockIdFromName("Dirt");
+      static const int32 grassID = ABlockTypeRegistery::BlockTypeRegistery->GetBlockIdFromName("Grass");
+
       for (int z = 0; z < CHUNKSIZEZ; ++z)
       {
         FBlock newBlock;
-        bool created = false;
 
         //Stone
         if ((z + 3) < finalHeight || (z >= 96 && z <= finalHeight))
         {
-          created = true;
-          newBlock.BlockType = 1;
+          newBlock.BlockType = stoneID;
         }
         //Dirt
         else if (z < finalHeight)
         {
-          created = true;
-          newBlock.BlockType = 2;
+          newBlock.BlockType = dirtID;
         }
         //Grass
         else if (z == finalHeight)
         {
-          created = true;
-          newBlock.BlockType = 3;
+          newBlock.BlockType = grassID;
+        }
+        else
+        {
+          newBlock.BlockType = airID;
         }
 
-        if (created)
-          SetBlock(FIntVector(x, y, z), newBlock);
+        SetBlock(FIntVector(x, y, z), newBlock);
       }
     }
   }
@@ -173,6 +173,9 @@ void AChunk::BuildMeshes()
   ensure(m_ProceduralMesh);
 
   m_ProceduralMesh->ClearAllMeshSections();
+
+  if (!ABlockTypeRegistery::BlockTypeRegistery)
+    return;
 
   //Opaque blocks
   {
@@ -413,33 +416,6 @@ uint8_t AChunk::GetCubeFlags(FIntVector& relativePos)
   return flags;
 }
 
-FLinearColor AChunk::GetTextureForCube(uint32 blockType, EChunkCubeFace face)
-{
-  switch (blockType)
-  {
-    // Grass
-    case 3:
-    {
-      switch (face)
-      {
-        case EChunkCubeFace::TOP:
-          return FLinearColor(2.f / 255.f, 0.f, 0.f);
-
-        case EChunkCubeFace::BOTTOM:
-          return FLinearColor(2.f / 255.f, 0.f, 0.f);
-
-        case EChunkCubeFace::FRONT:
-        case EChunkCubeFace::BACK:
-        case EChunkCubeFace::RIGHT:
-        case EChunkCubeFace::LEFT:
-          return FLinearColor(3.f / 255.f, 0.f, 0.f);
-      }
-    }
-  }
-
-  return FLinearColor((float)blockType / 255.f, 0.f, 0.f);
-}
-
 void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, FVector pos0, FVector pos1, FVector pos2, FVector pos3, FLinearColor color, FVector normal)
 {
   const int32 startIdx = vertices.Num();
@@ -469,32 +445,32 @@ bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, T
 
   if (flags & (uint8_t)EChunkCubeFace::BOTTOM)
   {
-    GenerateQuad( vertices, triangles, uvs, colors, normals, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], GetTextureForCube(blockType, EChunkCubeFace::BOTTOM), FVector(0, 0, -1));
+    GenerateQuad( vertices, triangles, uvs, colors, normals, CubeVertices[0], CubeVertices[1], CubeVertices[3], CubeVertices[2], ABlockTypeRegistery::BlockTypeRegistery->GetTextureForBlock(blockType, EChunkCubeFace::BOTTOM), FVector(0, 0, -1));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::TOP)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], GetTextureForCube(blockType, EChunkCubeFace::TOP), FVector(0, 0, 1));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[4], CubeVertices[6], CubeVertices[7], ABlockTypeRegistery::BlockTypeRegistery->GetTextureForBlock(blockType, EChunkCubeFace::TOP), FVector(0, 0, 1));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::BACK)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], GetTextureForCube(blockType, EChunkCubeFace::BACK), FVector(-1, 0, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[4], CubeVertices[0], CubeVertices[2], CubeVertices[6], ABlockTypeRegistery::BlockTypeRegistery->GetTextureForBlock(blockType, EChunkCubeFace::BACK), FVector(-1, 0, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::FRONT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], GetTextureForCube(blockType, EChunkCubeFace::FRONT), FVector(1, 0, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[7], CubeVertices[3], CubeVertices[1], CubeVertices[5], ABlockTypeRegistery::BlockTypeRegistery->GetTextureForBlock(blockType, EChunkCubeFace::FRONT), FVector(1, 0, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::RIGHT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], GetTextureForCube(blockType, EChunkCubeFace::RIGHT), FVector(0, -1, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[5], CubeVertices[1], CubeVertices[0], CubeVertices[4], ABlockTypeRegistery::BlockTypeRegistery->GetTextureForBlock(blockType, EChunkCubeFace::RIGHT), FVector(0, -1, 0));
     created |= true;
   }
   if (flags & (uint8_t)EChunkCubeFace::LEFT)
   {
-    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], GetTextureForCube(blockType, EChunkCubeFace::LEFT), FVector(0, 1, 0));
+    GenerateQuad(vertices, triangles, uvs, colors, normals, CubeVertices[6], CubeVertices[2], CubeVertices[3], CubeVertices[7], ABlockTypeRegistery::BlockTypeRegistery->GetTextureForBlock(blockType, EChunkCubeFace::LEFT), FVector(0, 1, 0));
     created |= true;
   }
 

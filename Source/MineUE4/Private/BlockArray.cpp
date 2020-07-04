@@ -2,7 +2,7 @@
 
 
 #include "BlockArray.h"
-#include "Chunks/Chunk.h"
+#include "Chunk.h"
 
 bool FCompressedBlock::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {

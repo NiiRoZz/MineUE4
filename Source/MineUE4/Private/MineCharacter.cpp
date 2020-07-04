@@ -5,8 +5,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "Chunks/Chunk.h"
-#include "Chunks/ChunkManager.h"
+#include "Chunk.h"
+#include "ChunkManager.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -143,8 +143,10 @@ void AMineCharacter::BreakBlock_Implementation(FVector start, AChunk* chunk, FIn
   if (!chunk)
     return;
 
+  static const int32 airID = ABlockTypeRegistery::BlockTypeRegistery->GetBlockIdFromName("Air");
+
   FBlock block;
-  block.BlockType = 0u;
+  block.BlockType = airID;
 
   chunk->SetBlock(blockPos, block);
   chunk->UpdateCompressedBlocks();
@@ -194,8 +196,10 @@ void AMineCharacter::PlaceBlock_Implementation(FVector start, AChunk* chunk, FIn
   if (!chunk)
     return;
 
+  static const int32 dirtID = ABlockTypeRegistery::BlockTypeRegistery->GetBlockIdFromName("Dirt");
+
   FBlock block;
-  block.BlockType = 2u;
+  block.BlockType = dirtID;
 
   //Outside of chunk bounds
   if (relativePos.X < 0 || relativePos.Y < 0 || relativePos.Z < 0 || relativePos.X >= AChunk::CHUNKSIZEX || relativePos.Y >= AChunk::CHUNKSIZEY || relativePos.Z >= AChunk::CHUNKSIZEZ)
