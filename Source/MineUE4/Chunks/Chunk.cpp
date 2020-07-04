@@ -60,7 +60,7 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 
 void AChunk::UpdateCompressedBlocks()
 {
-  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateCompressedBlocks 1 %d"), m_AllBlocks.Num());
+  //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateCompressedBlocks 1 %d"), m_AllBlocks.Num());
 
   FindChunkManager();
 
@@ -93,7 +93,7 @@ void AChunk::UpdateCompressedBlocks()
     OnRep_CompressedBlocks();
   }
 
-  UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateCompressedBlocks 2 %d"), m_CompressedBlocks.Num());
+  //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::UpdateCompressedBlocks 2 %d"), m_CompressedBlocks.Num());
 }
 
 void AChunk::SetBlock(FIntVector relativePos, FBlock& block)
@@ -148,11 +148,13 @@ void AChunk::Generate()
           created = true;
           newBlock.BlockType = 1;
         }
+        //Dirt
         else if (z < finalHeight)
         {
           created = true;
           newBlock.BlockType = 2;
         }
+        //Grass
         else if (z == finalHeight)
         {
           created = true;
@@ -231,7 +233,7 @@ void AChunk::BuildMeshes()
 
 void AChunk::OnRep_CompressedBlocks()
 {
-  UE_LOG(LogTemp, Warning, TEXT("OnRep_CompressedBlocks 1 %d"), m_CompressedBlocks.Num());
+  //UE_LOG(LogTemp, Warning, TEXT("OnRep_CompressedBlocks 1 %d"), m_CompressedBlocks.Num());
 
   FindChunkManager();
 

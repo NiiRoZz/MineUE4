@@ -40,6 +40,8 @@ public:
 
   AChunk** GetChunk(FIntVector chunkPos);
 
+  AChunk* SetBlock(FIntVector chunkPos, FIntVector relativePos, FBlock& block);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

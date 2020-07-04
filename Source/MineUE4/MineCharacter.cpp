@@ -5,6 +5,9 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Chunks/Chunk.h"
+#include "Chunks/ChunkManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMineCharacter::AMineCharacter()
@@ -61,6 +64,10 @@ void AMineCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
   PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
   //PlayerInputComponent->BindAxis("LookUpRate", this, &AFirstPersonCharacter::LookUpAtRate);
 
+  //Bind block events
+  PlayerInputComponent->BindAction("BreakBlock", IE_Pressed, this, &AMineCharacter::BreakBlockClient);
+  PlayerInputComponent->BindAction("PlaceBlock", IE_Pressed, this, &AMineCharacter::PlaceBlockClient);
+
 }
 
 void AMineCharacter::MoveForward(float Value)
@@ -92,3 +99,159 @@ void AMineCharacter::TurnAtRate(float Rate)
   // calculate delta for this frame from the rate information
   AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }*/
+
+void AMineCharacter::BreakBlockClient()
+{
+  UWorld* world = GetWorld();
+  if (!world)
+    return;
+
+  APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+  if (!camManager)
+    return;
+
+  FVector start = camManager->GetCameraLocation();
+  FVector end = start + camManager->GetActorForwardVector() * 350.f;
+
+  FCollisionQueryParams queryParam(FName("BlockCheck"), true, this);
+  FHitResult hitResult;
+  if (world->LineTraceSingleByChannel(hitResult, start, end, ECollisionChannel::ECC_Visibility, queryParam))
+  {
+    AChunk* chunk = Cast<AChunk>(hitResult.Actor);
+    if (!chunk)
+      return;
+
+    FVector relativePos = (hitResult.Location + hitResult.Normal * -10.f) - chunk->GetActorLocation();
+
+    FIntVector blockPos = FIntVector(
+      FMath::FloorToInt(relativePos.X / (float)AChunk::CubeSize),
+      FMath::FloorToInt(relativePos.Y / (float)AChunk::CubeSize),
+      FMath::FloorToInt(relativePos.Z / (float)AChunk::CubeSize)
+    );
+
+    BreakBlock(start, chunk, blockPos);
+  }
+}
+
+bool AMineCharacter::BreakBlock_Validate(FVector start, AChunk* chunk, FIntVector blockPos)
+{
+  return (chunk && blockPos.X < AChunk::CHUNKSIZEX && blockPos.Y < AChunk::CHUNKSIZEY && blockPos.Z < AChunk::CHUNKSIZEZ);
+}
+
+void AMineCharacter::BreakBlock_Implementation(FVector start, AChunk* chunk, FIntVector blockPos)
+{
+  if (!chunk)
+    return;
+
+  FBlock block;
+  block.BlockType = 0u;
+
+  chunk->SetBlock(blockPos, block);
+  chunk->UpdateCompressedBlocks();
+  chunk->FlushNetDormancy();
+}
+
+void AMineCharacter::PlaceBlockClient()
+{
+  UWorld* world = GetWorld();
+  if (!world)
+    return;
+
+  APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+  if (!camManager)
+    return;
+
+  FVector start = camManager->GetCameraLocation();
+  FVector end = start + camManager->GetActorForwardVector() * 350.f;
+
+  FCollisionQueryParams queryParam(FName("BlockCheck"), true, this);
+  FHitResult hitResult;
+  if (world->LineTraceSingleByChannel(hitResult, start, end, ECollisionChannel::ECC_Visibility, queryParam))
+  {
+    AChunk* chunk = Cast<AChunk>(hitResult.Actor);
+    if (!chunk)
+      return;
+
+    FVector relativePos = (hitResult.Location + hitResult.Normal * 10.f) - chunk->GetActorLocation();
+
+    FIntVector relativeBlockPos = FIntVector(
+      FMath::FloorToInt(relativePos.X / (float)AChunk::CubeSize),
+      FMath::FloorToInt(relativePos.Y / (float)AChunk::CubeSize),
+      FMath::FloorToInt(relativePos.Z / (float)AChunk::CubeSize)
+    );
+
+    PlaceBlock(start, chunk, relativeBlockPos);
+  }
+}
+
+bool AMineCharacter::PlaceBlock_Validate(FVector start, AChunk* chunk, FIntVector relativePos)
+{
+  return true;
+}
+
+void AMineCharacter::PlaceBlock_Implementation(FVector start, AChunk* chunk, FIntVector relativePos)
+{
+  if (!chunk)
+    return;
+
+  FBlock block;
+  block.BlockType = 2u;
+
+  //Outside of chunk bounds
+  if (relativePos.X < 0 || relativePos.Y < 0 || relativePos.Z < 0 || relativePos.X >= AChunk::CHUNKSIZEX || relativePos.Y >= AChunk::CHUNKSIZEY || relativePos.Z >= AChunk::CHUNKSIZEZ)
+  {
+    FindChunkManager();
+
+    if (!m_ChunkManager)
+      return;
+
+    FIntVector chunkPos = chunk->GetChunkPos();
+
+    FIntVector newBlockSpacePos(
+      chunkPos.X * AChunk::CHUNKSIZEX + relativePos.X,
+      chunkPos.Y * AChunk::CHUNKSIZEY + relativePos.Y,
+      chunkPos.Z * AChunk::CHUNKSIZEX + relativePos.Z
+     );
+
+    FIntVector newChunkPos(
+      FMath::FloorToInt(newBlockSpacePos.X / (float)AChunk::CHUNKSIZEX),
+      FMath::FloorToInt(newBlockSpacePos.Y / (float)AChunk::CHUNKSIZEY),
+      FMath::FloorToInt(newBlockSpacePos.Z / (float)AChunk::CHUNKSIZEZ)
+    );
+
+    FIntVector newBlockPos(
+      (newBlockSpacePos.X % AChunk::CHUNKSIZEX + AChunk::CHUNKSIZEX) % AChunk::CHUNKSIZEX,
+      (newBlockSpacePos.Y % AChunk::CHUNKSIZEY + AChunk::CHUNKSIZEY) % AChunk::CHUNKSIZEY,
+      (newBlockSpacePos.Z % AChunk::CHUNKSIZEZ + AChunk::CHUNKSIZEZ) % AChunk::CHUNKSIZEZ
+    );
+
+    AChunk* realChunk = m_ChunkManager->SetBlock(newChunkPos, newBlockPos, block);
+
+    if (realChunk)
+    {
+      realChunk->UpdateCompressedBlocks();
+      realChunk->FlushNetDormancy();
+    }
+  }
+  //Inside of chunk bounds
+  else
+  {
+    chunk->SetBlock(relativePos, block);
+    chunk->UpdateCompressedBlocks();
+    chunk->FlushNetDormancy();
+  }
+}
+
+void AMineCharacter::FindChunkManager()
+{
+  if (!m_ChunkManager)
+  {
+    TArray<AActor*> arrayChunkManager;
+
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AChunkManager::StaticClass(), arrayChunkManager);
+    check(arrayChunkManager.Num() > 0);
+
+    m_ChunkManager = Cast<AChunkManager>(arrayChunkManager[0]);
+    check(m_ChunkManager);
+  }
+}

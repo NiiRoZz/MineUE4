@@ -51,4 +51,19 @@ protected:
    */
   void TurnAtRate(float Rate);
 
+  void BreakBlockClient();
+
+  UFUNCTION(Server, Reliable, WithValidation)
+  void BreakBlock(FVector start, AChunk* chunk, FIntVector blockPos);
+
+  void PlaceBlockClient();
+
+  UFUNCTION(Server, Reliable, WithValidation)
+  void PlaceBlock(FVector start, AChunk* chunk, FIntVector relativePos);
+
+private:
+  void FindChunkManager();
+
+  UPROPERTY()
+  class AChunkManager* m_ChunkManager;
 };

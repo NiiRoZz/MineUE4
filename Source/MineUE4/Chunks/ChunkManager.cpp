@@ -133,6 +133,17 @@ AChunk** AChunkManager::GetChunk(FIntVector chunkPos)
   return m_Chunks.Find(chunkPos);
 }
 
+AChunk* AChunkManager::SetBlock(FIntVector chunkPos, FIntVector relativePos, FBlock& block)
+{
+  AChunk** chunk = m_Chunks.Find(chunkPos);
+  if (!chunk)
+    return nullptr;
+
+  (*chunk)->SetBlock(relativePos, block);
+
+  return (*chunk);
+}
+
 // Called every frame
 void AChunkManager::Tick(float DeltaTime)
 {
@@ -145,8 +156,6 @@ void AChunkManager::Tick(float DeltaTime)
 
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerController::StaticClass(), allPlayers);
 
-    //UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 1 %d"), allPlayers.Num());
-
     //Find the deleted chunks
     TArray<FIntVector> allDeletedChunks;
     for (auto& currChunk : m_Chunks)
@@ -157,19 +166,21 @@ void AChunkManager::Tick(float DeltaTime)
       }
     }
 
-    if (allDeletedChunks.Num() > 0)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("AChunkManager::Tick 2 %d"), allDeletedChunks.Num());
-    }
-
     //Delete chunks
+    uint8 nmbChunkDeleted = 0;
     for (auto& currChunk : allDeletedChunks)
     {
+      if (nmbChunkDeleted > 5)
+        break;
+
       AChunk* chunk = m_Chunks.FindAndRemoveChecked(currChunk);
       if (!chunk)
       {
         continue;
       }
+
+      nmbChunkDeleted++;
+
       chunk->Destroy();
     }
 

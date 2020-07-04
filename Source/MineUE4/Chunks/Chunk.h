@@ -29,12 +29,12 @@ class MINEUE4_API AChunk : public AActor
   GENERATED_BODY()
 
 public:
-  static const uint16 CHUNKSIZEX = 16u;
-  static const uint16 CHUNKSIZEY = 16u;
-  static const uint16 CHUNKSIZEZ = 32u;
-  static const uint16 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
-  static const uint16 CubeSize = 100u;
-  static const uint16 MAXTYPEOFBLOCKS = 256u;
+  static const int32 CHUNKSIZEX = 16u;
+  static const int32 CHUNKSIZEY = 16u;
+  static const int32 CHUNKSIZEZ = 32u;
+  static const int32 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
+  static const int32 CubeSize = 100u;
+  static const int32 MAXTYPEOFBLOCKS = 256u;
   
 public:	
   // Sets default values for this actor's properties
