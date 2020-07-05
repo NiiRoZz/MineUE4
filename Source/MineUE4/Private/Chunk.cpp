@@ -428,7 +428,7 @@ void AChunk::GenerateQuad(TArray<FVector>& vertices, TArray<int32>& triangles, T
 
 bool AChunk::GenerateCube(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector2D>& uvs, TArray<FLinearColor>& colors, TArray<FVector>& normals, uint32 blockType, FIntVector pos, uint8_t flags)
 {
-  const FVector offset = FVector( pos * CubeSize );
+  const FVector offset( pos * (float)CubeSize );
 
   const TArray<FVector> CubeVertices( {
     offset + FVector(0, 0, 0),

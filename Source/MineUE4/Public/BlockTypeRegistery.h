@@ -101,5 +101,5 @@ private:
   void DrawAtlasElement(UCanvas* canvas, UTexture2D* texture, uint32 currTextureIdx, FVector2D atlasElemSize);
   void DrawTextureAtlas(); 
 
-  const int32 m_TextureSize = 16;
+  const int32 m_TextureSize = 32;
 };

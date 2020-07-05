@@ -41,6 +41,11 @@ FLinearColor ABlockTypeRegistery::GetTextureForBlock(int32 blockType, EChunkCube
   if (blockType < 0 || !m_BlockTypes.IsValidIndex(blockType))
     return FLinearColor();
 
+  /*if (face == EChunkCubeFace::TOP)
+  {
+    UE_LOG(LogTemp, Warning, TEXT("ABlockTypeRegistery::GetTextureForBlock 1 %s %d %d %f"), *(m_BlockTypes[blockType].Name.ToString()), face, m_BlockTypes[blockType].TextureTopId, (m_BlockTypes[blockType].TextureTopId / 4095.f));
+  }*/
+
   switch (face)
   {
     case EChunkCubeFace::TOP:
@@ -95,10 +100,10 @@ void ABlockTypeRegistery::BeginPlay()
 
 void ABlockTypeRegistery::DrawAtlasElement(UCanvas* canvas, UTexture2D* texture, uint32 currTextureIdx, FVector2D atlasElemSize)
 {
-  const int indexX = currTextureIdx % m_TextureSize;
-  const int indexY = currTextureIdx / m_TextureSize;
+  const int indexX = currTextureIdx % (int)atlasElemSize.X;
+  const int indexY = currTextureIdx / (int)atlasElemSize.X;
 
-  canvas->DrawTile(texture, (float)indexX * atlasElemSize.X, (float) indexY * atlasElemSize.Y, atlasElemSize.X, atlasElemSize.Y, 0, 0, texture->GetSizeX(), texture->GetSizeY());
+  canvas->DrawTile(texture, (float)indexX * m_TextureSize, (float)indexY * m_TextureSize, m_TextureSize, m_TextureSize, 0, 0, texture->GetSizeX(), texture->GetSizeY());
 }
 
 void ABlockTypeRegistery::DrawTextureAtlas()
