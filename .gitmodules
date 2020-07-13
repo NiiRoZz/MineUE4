@@ -1,4 +1,1 @@
-[submodule "Plugins/SimplexNoise"]
-	path = Plugins/SimplexNoise
-	url = https://github.com/devdad/SimplexNoise
-	ignore = all
+
