@@ -6,6 +6,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 
+#include "FastNoise.h"
+
+#include "Windows/PreWindowsApi.h"
+#include "enet/enet.h"
+#include "Windows/PostWindowsApi.h"
+
 // Sets default values
 AChunkManager::AChunkManager()
 {
@@ -18,6 +24,16 @@ AChunkManager::AChunkManager()
 void AChunkManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	enet_initialize();
+
+	FastNoise noise(5000);
+	noise.SetNoiseType(FastNoise::NoiseType::SimplexFractal);
+	noise.SetFractalType(FastNoise::FractalType::FBM);
+	noise.SetFrequency(0.02f);
+	noise.SetFractalOctaves(5);
+	noise.SetFractalLacunarity(2.0f);
+	noise.SetFractalGain(0.6f);
 
   /*if (GetLocalRole() == ENetRole::ROLE_Authority)
   {
@@ -318,4 +334,3 @@ bool AChunkManager::IsPlayerNearby(AChunk* chunk, TArray<AActor*>& allPlayers) c
 
   return false;
 }
-

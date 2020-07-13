@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using System.IO;
 
 public class MineUE4 : ModuleRules
 {
@@ -11,6 +12,21 @@ public class MineUE4 : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "ProceduralMeshComponent" });
+		
+        string ThirdParty = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../ThirdParty"));
+
+        string LibraryEnetPath = Path.Combine(ThirdParty, "enet", "lib"); // my lib dir
+        string IncludeEnetPath = Path.Combine(ThirdParty, "enet", "include"); // my include dir
+		
+		string LibraryFastNoisePath = Path.Combine(ThirdParty, "FastNoise", "lib"); // my lib dir
+        string IncludeFastNoisePath = Path.Combine(ThirdParty, "FastNoise", "include"); // my include dir
+
+        //include the stuff
+        PublicIncludePaths.Add(IncludeEnetPath); // enet
+        PublicAdditionalLibraries.Add(LibraryEnetPath + "/enet.lib"); // enet
+		
+		PublicIncludePaths.Add(IncludeFastNoisePath); // FastNoise
+        PublicAdditionalLibraries.Add(LibraryFastNoisePath + "/FastNoise.lib"); // FastNoise
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
