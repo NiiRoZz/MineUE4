@@ -5,6 +5,7 @@
 #include "Block.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
+#include "SimplexNoiseBPLibrary.h"
 
 // Sets default values
 AChunkManager::AChunkManager()
@@ -18,6 +19,8 @@ AChunkManager::AChunkManager()
 void AChunkManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	USimplexNoiseBPLibrary::GetSimplexNoise3D_EX(0, 0, 0);
 
   /*if (GetLocalRole() == ENetRole::ROLE_Authority)
   {
