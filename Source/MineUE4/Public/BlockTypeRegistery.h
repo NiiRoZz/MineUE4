@@ -40,27 +40,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EBLockVisibility Visibility;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "Visibility == EBLockVisibility::OPAQUE"))
 	UTexture2D* TextureTop;
 	uint32      TextureTopId;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "Visibility == EBLockVisibility::OPAQUE"))
 	UTexture2D* TextureBottom;
 	uint32      TextureBottomId;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "Visibility == EBLockVisibility::OPAQUE"))
 	UTexture2D* TextureFront;
 	uint32      TextureFrontId;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "Visibility == EBLockVisibility::OPAQUE"))
 	UTexture2D* TextureBack;
 	uint32      TextureBackId;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "Visibility == EBLockVisibility::OPAQUE"))
 	UTexture2D* TextureRight;
 	uint32      TextureRightId;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "Visibility == EBLockVisibility::OPAQUE"))
 	UTexture2D* TextureLeft;
 	uint32      TextureLeftId;
 };
