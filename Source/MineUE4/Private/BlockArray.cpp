@@ -3,10 +3,11 @@
 
 #include "BlockArray.h"
 #include "Chunk.h"
+#include "BlockTypeRegistery.h"
 
 bool FCompressedBlock::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
-  static const int32 NMBBITSMAXTYPEOFBLOCKS = (int32)FMath::Log2(AChunk::MAXTYPEOFBLOCKS - 1) + 1;
+  static const int32 NMBBITSMAXTYPEOFBLOCKS = (int32)FMath::Log2(ABlockTypeRegistery::BlockTypeRegistery->GetMaxTypeOfBlocks() - 1) + 1;
   static const int32 NMBMAXBBLOCKS = (int32)FMath::Log2(AChunk::CHUNKSIZEX * AChunk::CHUNKSIZEY * AChunk::CHUNKSIZEZ - 1) + 1;
 
   //Max is 255 inclusive, so we need to only serialize only 8 bits

@@ -22,7 +22,6 @@ public:
 	static const uint16 CHUNKSIZEZ = 128u;
 	static const uint16 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
 	static const uint16 CubeSize = 100u;
-	static const uint16 MAXTYPEOFBLOCKS = 256u;
 	
 public:	
 	// Sets default values for this actor's properties

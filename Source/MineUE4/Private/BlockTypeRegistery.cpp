@@ -90,6 +90,11 @@ FBlockType* ABlockTypeRegistery::GetBlockTypeById(int32 blockType)
 	return &(m_BlockTypes[blockType]);
 }
 
+int32 ABlockTypeRegistery::GetMaxTypeOfBlocks()
+{
+	return m_BlockTypes.Num();
+}
+
 // Called when the game starts or when spawned
 void ABlockTypeRegistery::BeginPlay()
 {

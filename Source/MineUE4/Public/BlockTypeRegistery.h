@@ -86,6 +86,8 @@ public:
 
 	FBlockType* GetBlockTypeById(int32 blockType);
 
+	int32 GetMaxTypeOfBlocks();
+
 protected:
 
 	// Called when the game starts or when spawned
