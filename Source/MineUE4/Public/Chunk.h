@@ -19,7 +19,7 @@ class MINEUE4_API AChunk : public AActor
 public:
   static const uint16 CHUNKSIZEX = 16u;
   static const uint16 CHUNKSIZEY = 16u;
-  static const uint16 CHUNKSIZEZ = 32u;
+  static const uint16 CHUNKSIZEZ = 128u;
   static const uint16 CHUNKSIZEXY = CHUNKSIZEX * CHUNKSIZEY;
   static const uint16 CubeSize = 100u;
   static const uint16 MAXTYPEOFBLOCKS = 256u;

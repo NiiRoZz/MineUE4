@@ -98,8 +98,8 @@ protected:
   UTextureRenderTarget2D* m_RenderTarget;
 
 private:
-  void DrawAtlasElement(UCanvas* canvas, UTexture2D* texture, uint32 currTextureIdx, FVector2D atlasElemSize);
+  void DrawAtlasElement(UCanvas* canvas, UTexture2D* texture, uint32 currTextureIdx, const FVector2D& atlasElemSize);
   void DrawTextureAtlas(); 
 
-  const int32 m_TextureSize = 32;
+  const int32 m_TextureSize = 16;
 };
