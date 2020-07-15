@@ -12,16 +12,16 @@
 USTRUCT()
 struct MINEUE4_API FBlock
 {
-  GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-  UPROPERTY()
-  int32 BlockType = -1;
+	UPROPERTY()
+	int32 BlockType = -1;
 
-  bool IsTransluscent();
+	bool IsTransluscent();
 
-  bool IsInvisible();
+	bool IsInvisible();
 
-  void CopyFrom(FBlock &block);
-  void CopyFrom(FCompressedBlock& block);
+	void CopyFrom(FBlock &block);
+	void CopyFrom(FCompressedBlock& block);
 };

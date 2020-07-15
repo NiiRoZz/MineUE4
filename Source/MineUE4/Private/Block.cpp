@@ -8,34 +8,34 @@
 
 bool FBlock::IsTransluscent()
 {
-  if (!ABlockTypeRegistery::BlockTypeRegistery)
-    return false;
+	if (!ABlockTypeRegistery::BlockTypeRegistery)
+		return false;
 
-  FBlockType* blockType = ABlockTypeRegistery::BlockTypeRegistery->GetBlockTypeById(BlockType);
-  if (!blockType)
-    return false;
+	FBlockType* blockType = ABlockTypeRegistery::BlockTypeRegistery->GetBlockTypeById(BlockType);
+	if (!blockType)
+		return false;
 
-  return (blockType->Visibility == EBLockVisibility::TRANSLUSCENT);
+	return (blockType->Visibility == EBLockVisibility::TRANSLUSCENT);
 }
 
 bool FBlock::IsInvisible()
 {
-  if (!ABlockTypeRegistery::BlockTypeRegistery)
-    return false;
+	if (!ABlockTypeRegistery::BlockTypeRegistery)
+		return false;
 
-  FBlockType* blockType = ABlockTypeRegistery::BlockTypeRegistery->GetBlockTypeById(BlockType);
-  if (!blockType)
-    return false;
+	FBlockType* blockType = ABlockTypeRegistery::BlockTypeRegistery->GetBlockTypeById(BlockType);
+	if (!blockType)
+		return false;
 
-  return (blockType->Visibility == EBLockVisibility::INVISIBLE);
+	return (blockType->Visibility == EBLockVisibility::INVISIBLE);
 }
 
 void FBlock::CopyFrom(FBlock& block)
 {
-  BlockType = block.BlockType;
+	BlockType = block.BlockType;
 }
 
 void FBlock::CopyFrom(FCompressedBlock& block)
 {
-  BlockType = block.BlockType;
+	BlockType = block.BlockType;
 }
