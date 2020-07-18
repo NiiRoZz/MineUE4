@@ -12,6 +12,7 @@
 #pragma push_macro("PI")
 #undef PI
 #pragma warning(disable : 4099)
+#define IS_RP3D_DOUBLE_PRECISION_ENABLED
 #include "reactphysics3d/reactphysics3d.h"
 #pragma pop_macro("PI")
 #include "Windows/PostWindowsApi.h"

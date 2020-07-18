@@ -37,5 +37,6 @@ public:
 
 protected:
 
-	ENetHost* m_Host;
+	ENetHost* m_NetworkClient;
+	ENetPeer* m_NetworkPeer;
 };
