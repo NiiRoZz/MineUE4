@@ -8,6 +8,14 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Windows/PreWindowsApi.h"
+#pragma push_macro("PI")
+#undef PI
+#pragma warning(disable : 4099)
+#include "reactphysics3d/reactphysics3d.h"
+#pragma pop_macro("PI")
+#include "Windows/PostWindowsApi.h"
+
 // Sets default values
 AChunk::AChunk()
 {
@@ -39,6 +47,10 @@ void AChunk::BeginPlay()
 
 	SetNetDormancy(ENetDormancy::DORM_DormantAll);
 	NetCullDistanceSquared = 368640000.f;
+
+	rp3d::PhysicsCommon physicsCommon;
+	
+	rp3d::PhysicsWorld* world = physicsCommon.createPhysicsWorld();
 }
 
 // Called every frame

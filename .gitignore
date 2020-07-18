@@ -26,7 +26,6 @@
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
@@ -75,3 +74,43 @@ MineUE4Client/Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 MineUE4Client/DerivedDataCache/*
+
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Mono auto generated files
+mono_crash.*
+
+# Build results
+MineUE4Server/[Dd]ebug/
+MineUE4Server/[Dd]ebugPublic/
+MineUE4Server/[Rr]elease/
+MineUE4Server/[Rr]eleases/
+MineUE4Server/x64/
+MineUE4Server/x86/
+MineUE4Server/[Ww][Ii][Nn]32/
+MineUE4Server/[Aa][Rr][Mm]/
+MineUE4Server/[Aa][Rr][Mm]64/
+MineUE4Server/bld/
+MineUE4Server/[Bb]in/
+MineUE4Server/[Oo]bj/
+MineUE4Server/[Ll]og/
+MineUE4Server/[Ll]ogs/
+
+# Visual Studio 2015/2017 cache/options directory
+MineUE4Server/.vs/
+
+# Visual Studio 2017 auto generated files
+MineUE4Server/Generated\ Files/
+
+# MSTest test Results
+MineUE4Server/[Tt]est[Rr]esult*/
+MineUE4Server/[Bb]uild[Ll]og.*
