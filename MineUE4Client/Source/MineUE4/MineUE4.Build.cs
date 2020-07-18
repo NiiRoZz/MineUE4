@@ -20,6 +20,9 @@ public class MineUE4 : ModuleRules
 		
 		string LibraryFastNoisePath = Path.Combine(ThirdParty, "FastNoise", "lib"); // my lib dir
         string IncludeFastNoisePath = Path.Combine(ThirdParty, "FastNoise", "include"); // my include dir
+		
+		string LibraryReactPhysics3DPath = Path.Combine(ThirdParty, "reactphysics3d", "lib"); // my lib dir
+        string IncludeReactPhysics3DPath = Path.Combine(ThirdParty, "reactphysics3d", "include"); // my include dir
 
         //include the stuff
         PublicIncludePaths.Add(IncludeEnetPath); // enet
@@ -27,6 +30,9 @@ public class MineUE4 : ModuleRules
 		
 		PublicIncludePaths.Add(IncludeFastNoisePath); // FastNoise
         PublicAdditionalLibraries.Add(LibraryFastNoisePath + "/FastNoise.lib"); // FastNoise
+		
+		PublicIncludePaths.Add(IncludeReactPhysics3DPath); // ReactPhysics3D
+        PublicAdditionalLibraries.Add(LibraryReactPhysics3DPath + "/reactphysics3d.lib"); // ReactPhysics3D
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
