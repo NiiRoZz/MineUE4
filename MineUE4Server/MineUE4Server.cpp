@@ -5,6 +5,8 @@
 
 #include "enet/enet.h"
 
+#include "Game.h"
+
 int main()
 {
 		enet_initialize();
@@ -32,13 +34,17 @@ int main()
 		// world and other objects . It is also responsible for
 		// logging and memory management
 		rp3d::PhysicsCommon physicsCommon;
+
 		// Create a physics world
 		rp3d::PhysicsWorld* world = physicsCommon.createPhysicsWorld();
+
 		// Create a rigid body in the world
-		rp3d::Vector3 position(0, 20, 0);
+		/*rp3d::Vector3 position(0, 20, 0);
 		rp3d::Quaternion orientation = rp3d::Quaternion::identity();
 		rp3d::Transform transform(position, orientation);
-		rp3d::RigidBody* body = world->createRigidBody(transform);
+		rp3d::RigidBody* body = world->createRigidBody(transform);*/
+
+		MineUE4Server::Game game;
 
 		const rp3d::decimal timeStep = 1.0f / 60.0f;
 
@@ -52,6 +58,7 @@ int main()
 		{
 			auto currentFrameTime = std::chrono::high_resolution_clock::now();
 
+			//delatime between each frame in seconds
 			double deltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(currentFrameTime - previousFrameTime).count();
 			deltaTime *= 1e-9;
 
@@ -61,6 +68,8 @@ int main()
 			// Add the time difference in the accumulator
 			accumulator += deltaTime;
 
+			world->update(deltaTime);
+
 			//Dispatch network events
 			ENetEvent event;
 			while (enet_host_service(server, &event, 0) > 0)
@@ -69,21 +78,25 @@ int main()
 				{
 					case ENET_EVENT_TYPE_CONNECT:
 					{
-						printf("A new client connected from %x:%u.\n",
+						printf("A new client connected from %x:%u  %p.\n",
 							event.peer->address.host,
-							event.peer->address.port);
-						/* Store any relevant client information here. */
-						//event.peer->data = "Client information";
+							event.peer->address.port,
+							event.peer
+						);
+
+						game.OnNewPlayer(event.peer);
 
 						break;
 					}
 					
 					case ENET_EVENT_TYPE_RECEIVE:
 					{
-						printf("A packet of length %u containing %s was received on channel %u.\n",
+						printf("A packet of length %u containing %s was received on channel %u  %p.\n",
 							event.packet->dataLength,
 							event.packet->data,
-							event.channelID);
+							event.channelID,
+							event.peer	
+						);
 						/* Clean up the packet now that we're done using it. */
 						enet_packet_destroy(event.packet);
 
@@ -93,7 +106,10 @@ int main()
 
 					case ENET_EVENT_TYPE_DISCONNECT:
 					{
-						printf("%s disconnected.\n", event.peer->data);
+						printf("%lu disconnected.\n", *(std::size_t*)(event.peer->data));
+
+						game.OnDisconnectedPlayer(event.peer);
+
 						/* Reset the peer's client information. */
 						event.peer->data = NULL;
 
@@ -109,8 +125,13 @@ int main()
 			// one or several physics steps
 			while (accumulator >= timeStep)
 			{
+				game.prePhysicsUpdate(timeStep);
+
 				// Update the Dynamics world with a constant time step
 				world->update(timeStep);
+
+				game.postPhysicsUpdate(timeStep);
+
 				// Decrease the accumulated time
 				accumulator -= timeStep;
 			}
