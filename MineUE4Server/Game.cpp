@@ -28,7 +28,7 @@ namespace MineUE4Server
 		std::size_t playerID = m_Players.size();
 		auto& addedPlayer = m_Players.emplace_back( std::make_unique<Player>(playerPeer, playerID) );
 
-		playerPeer->data = malloc(sizeof(std::size_t));
+		playerPeer->data = new std::size_t;
 
 		std::cout << "Game::OnNewPlayer 2 " << playerID << std::endl;
 		*(std::size_t*)playerPeer->data = playerID;
@@ -36,11 +36,14 @@ namespace MineUE4Server
 
 	void Game::OnDisconnectedPlayer(ENetPeer* playerPeer)
 	{
+		if (playerPeer->data == nullptr)
+			return;
+
 		std::size_t playerIdx = *(std::size_t*)(playerPeer->data);
 
 		std::cout << "Game::OnDisconnectedPlayer 1 " << playerIdx << std::endl;
 
-		free(playerPeer->data);
+		delete playerPeer->data;
 
 		if (playerIdx >= m_Players.size())
 			return;
