@@ -6,6 +6,10 @@
 #include "Math/UnrealMathUtility.h"
 #include "BlockTypeRegistery.h"
 
+#include "Windows/PreWindowsApi.h"
+#include "ByteBuffer.h"
+#include "Windows/PostWindowsApi.h"
+
 bool FBlock::IsTransluscent()
 {
 	if (!ABlockTypeRegistery::BlockTypeRegistery)

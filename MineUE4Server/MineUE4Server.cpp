@@ -6,6 +6,7 @@
 #include "enet/enet.h"
 
 #include "Game.h"
+#include "ByteBuffer.h"
 
 int main()
 {
@@ -53,6 +54,8 @@ int main()
 
 		bool running = true;
 
+		MineUE4::ByteBuffer buffer;
+
 		//Server loop
 		while (running)
 		{
@@ -84,7 +87,7 @@ int main()
 							event.peer
 						);
 
-						game.OnNewPlayer(event.peer);
+						game.onNewPlayer(event.peer);
 
 						break;
 					}
@@ -108,7 +111,7 @@ int main()
 					{
 						printf("%lu disconnected.\n", *(std::size_t*)(event.peer->data));
 
-						game.OnDisconnectedPlayer(event.peer);
+						game.onDisconnectedPlayer(event.peer);
 
 						/* Reset the peer's client information. */
 						event.peer->data = NULL;

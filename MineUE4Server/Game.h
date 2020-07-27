@@ -22,10 +22,10 @@ namespace MineUE4Server
 			void postPhysicsUpdate(double dt);
 
 			//Called each time new player connect
-			void OnNewPlayer(ENetPeer* playerPeer);
+			void onNewPlayer(ENetPeer* playerPeer);
 
 			//Called each time a player disconnect
-			void OnDisconnectedPlayer(ENetPeer* playerPeer);
+			void onDisconnectedPlayer(ENetPeer* playerPeer);
 
 		private:
 			

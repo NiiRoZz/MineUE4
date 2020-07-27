@@ -23,6 +23,8 @@ public class MineUE4 : ModuleRules
 		
 		string LibraryReactPhysics3DPath = Path.Combine(ThirdParty, "reactphysics3d", "lib"); // my lib dir
         string IncludeReactPhysics3DPath = Path.Combine(ThirdParty, "reactphysics3d", "include"); // my include dir
+		
+		string IncludeCommonPath = Path.Combine(Path.GetFullPath(Path.Combine(ModuleDirectory, "../../..")), "Common");
 
         //include the stuff
         PublicIncludePaths.Add(IncludeEnetPath); // enet
@@ -33,6 +35,8 @@ public class MineUE4 : ModuleRules
 		
 		PublicIncludePaths.Add(IncludeReactPhysics3DPath); // ReactPhysics3D
         PublicAdditionalLibraries.Add(LibraryReactPhysics3DPath + "/reactphysics3d.lib"); // ReactPhysics3D
+		
+		PublicIncludePaths.Add(IncludeCommonPath); // Common
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

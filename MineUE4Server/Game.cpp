@@ -19,7 +19,7 @@ namespace MineUE4Server
 		
 	}
 
-	void Game::OnNewPlayer(ENetPeer* playerPeer)
+	void Game::onNewPlayer(ENetPeer* playerPeer)
 	{
 		std::cout << "Game::OnNewPlayer 1 " << playerPeer << std::endl;
 		if (playerPeer->data != nullptr)
@@ -34,7 +34,7 @@ namespace MineUE4Server
 		*(std::size_t*)playerPeer->data = playerID;
 	}
 
-	void Game::OnDisconnectedPlayer(ENetPeer* playerPeer)
+	void Game::onDisconnectedPlayer(ENetPeer* playerPeer)
 	{
 		if (playerPeer->data == nullptr)
 			return;
