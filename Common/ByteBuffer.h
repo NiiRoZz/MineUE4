@@ -32,24 +32,52 @@ namespace MineUE4
 			std::free(m_Data);
 		}
 
-		void writeBits(void* data, uint64_t num)
+		void writeBits(void* data, uint64_t nmbBytes)
 		{
-			writeBytes(data, (num + 7) / 8);
+			writeBytes(data, (nmbBytes + 7) / 8);
 		}
 
-		void writeBytes(void* data, uint64_t num)
+		void writeBytes(void* data, uint64_t nmbBytes)
 		{
-			const int64_t numBytesAfterWrite = m_Pos + num;
+			const int64_t numBytesAfterWrite = m_Pos + nmbBytes;
 			if ((uint64_t) numBytesAfterWrite > m_Size)
 			{
 				const uint64_t newArrayCount = m_Size + numBytesAfterWrite;
 				resize(newArrayCount);
 			}
 
-			assert((m_Pos + num) <= m_Size);
+			assert((m_Pos + nmbBytes) <= m_Size);
 
-			std::memcpy((uint8_t*)m_Data + m_Pos, data, num);
-			m_Pos += num;
+			std::memcpy((uint8_t*)m_Data + m_Pos, data, nmbBytes);
+			m_Pos += nmbBytes;
+		}
+
+		bool readBits(void* data, uint64_t nmbBytes)
+		{
+			bool read = readBytes(data, (nmbBytes + 7) / 8);
+
+			//read last bits needed
+			if (read && (nmbBytes % 8) != 0)
+			{
+				((uint8_t*)data)[nmbBytes / 8] &= ((1 << (nmbBytes & 7)) - 1);
+
+				return true;
+			}
+
+			return read;
+		}
+
+		bool readBytes(void* data, uint64_t nmbBytes)
+		{
+			if (m_Pos + nmbBytes <= m_Size)
+			{
+				std::memcpy(data, (uint8_t*)m_Data + m_Pos, nmbBytes);
+				m_Pos += nmbBytes;
+
+				return true;
+			}
+			
+			return false;
 		}
 
 		//nmbBytes should be > than current size of the buffer
