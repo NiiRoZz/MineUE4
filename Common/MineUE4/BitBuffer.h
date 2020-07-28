@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <cstdlib>
 
 namespace MineUE4
 {
@@ -11,7 +12,7 @@ namespace MineUE4
 	public:
 		// defaultSize is in bit
 		BitBuffer(uint64_t defaultSize = 8)
-		: m_Data(std::malloc((defaultSize + 7) / 8))
+		: m_Data(std::calloc((defaultSize + 7) / 8, 1))
 		, m_Pos(0)
 		, m_Size(defaultSize)
 		, m_Read(false)
@@ -36,16 +37,15 @@ namespace MineUE4
 				std::free(m_Data);
 		}
 
-		void writeBits(void* data, uint64_t nmbBits)
+		bool writeBits(void* data, uint64_t nmbBits)
 		{
-			if (nmbBits <= 0u)
-				return;
+			if (nmbBits <= 0u || m_Read)
+				return false;
 
 			const uint64_t numBitsAfterWrite = m_Pos + nmbBits;
 			if (numBitsAfterWrite > m_Size)
 			{
-				const uint64_t newCount = m_Size + numBitsAfterWrite;
-				grow(newCount);
+				grow(numBitsAfterWrite);
 			}
 
 			//If we add byte and we are already at a first byte, just copy memory
@@ -71,19 +71,18 @@ namespace MineUE4
 					m_Pos++;
 				}
 			}
+
+			return true;
 		}
 
-		void writeBytes(void* data, uint64_t nmbBytes)
+		bool writeBytes(void* data, uint64_t nmbBytes)
 		{
-			if (nmbBytes <= 0u)
-				return;
-
-			writeBits(data, nmbBytes * 8);
+			return writeBits(data, nmbBytes * 8);
 		}
 
 		bool readBits(void* data, uint64_t nmbBits)
 		{
-			if (nmbBits <= 0 || m_Pos + nmbBits > m_Size)
+			if (nmbBits <= 0 || m_Pos + nmbBits > m_Size || !m_Read)
 				return false;
 
 			if (m_Pos % 8 == 0 && nmbBits % 8 == 0)
@@ -127,15 +126,47 @@ namespace MineUE4
 			return m_Size;
 		}
 
+		bool IsReading() const
+		{
+			return m_Read;
+		}
+
+		template<typename T>
+		BitBuffer& operator>>(T& rhs)
+		{
+			assert(readBytes(&rhs, sizeof(T)));
+			return *this;
+		}
+
+		template<typename T>
+		BitBuffer& operator<<(T& rhs)
+		{
+			assert(writeBytes(&rhs, sizeof(T)));
+			return *this;
+		}
+
 	protected:
-		//nmbBytes should be > than current size of the buffer
+		//nmbBits should be > than current size of the buffer
 		void grow(const uint64_t nmbBits)
 		{
 			if (nmbBits <= m_Size || nmbBits <= 0u)
 				return;
 
-			m_Data = std::realloc(m_Data, ((nmbBits + 7) / 8));
+			const uint64_t nmbNewBytes = (nmbBits + 7) / 8;
+			const uint64_t nmbOldBytes = (m_Size + 7) / 8;
+			//Detect if the number of new bytes is equal to old one, because we don't need to realloc if byte has not changed
+			if (nmbNewBytes == nmbOldBytes)
+			{
+				m_Size = nmbBits;
+				return;
+			}
+
+			m_Data = std::realloc(m_Data, nmbNewBytes);
 			assert(m_Data != nullptr);
+
+			//We need to set every bit to 0 when we realloc
+			const uint64_t diff = nmbNewBytes - nmbOldBytes;
+			std::memset((uint8_t*)m_Data + nmbOldBytes, 0, diff);
 
 			m_Size = nmbBits;
 		}
@@ -150,6 +181,6 @@ namespace MineUE4
 		uint64_t m_Size;
 
 		//Detect if we are reading or writing
-		bool m_Read;
+		const bool m_Read;
 	};
 }
