@@ -149,7 +149,7 @@ namespace MineUE4
 		//nmbBits should be > than current size of the buffer
 		void grow(const uint64_t nmbBits)
 		{
-			if (nmbBits <= m_Size || nmbBits <= 0u)
+			if (nmbBits <= m_Size || nmbBits <= 0u || m_Read)
 				return;
 
 			const uint64_t nmbNewBytes = (nmbBits + 7) / 8;
