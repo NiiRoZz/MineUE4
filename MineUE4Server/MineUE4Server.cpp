@@ -6,7 +6,7 @@
 #include "enet/enet.h"
 
 #include "Game.h"
-#include "ByteBuffer.h"
+#include "MineUE4/BitBuffer.h"
 
 int main()
 {
@@ -54,7 +54,7 @@ int main()
 
 		bool running = true;
 
-		MineUE4::ByteBuffer buffer;
+		MineUE4::BitBuffer buffer;
 
 		//Server loop
 		while (running)

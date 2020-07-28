@@ -7,7 +7,7 @@
 #include "BlockTypeRegistery.h"
 
 #include "Windows/PreWindowsApi.h"
-#include "ByteBuffer.h"
+#include "MineUE4/BitBuffer.h"
 #include "Windows/PostWindowsApi.h"
 
 bool FBlock::IsTransluscent()
